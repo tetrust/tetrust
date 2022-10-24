@@ -385,6 +385,28 @@ impl GameInfo {
         }
     }
 
+    // 오른쪽 끝까지 이동
+    pub fn right_move_end(&mut self) {
+        if let Some(current_block) = self.current_block {
+            loop {
+                let next_position = self.current_position.clone().add_x(1);
+
+                if valid_block(&self.board, &current_block.cells, next_position) {
+                    self.current_position = next_position;
+                    if !valid_block(
+                        &self.board,
+                        &current_block.cells,
+                        self.current_position.add_y(1),
+                    ) {
+                        self.lock_delay_count += 1;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
     // 왼쪽 회전 (반시계방향)
     pub fn left_rotate(&mut self) {
         if let Some(current_block) = &mut self.current_block {
