@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+use instant::Instant;
+
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
     SpinType,
@@ -52,9 +54,9 @@ pub struct GameInfo {
     pub das: u32, // delay auto shift. 밀리초 단위.
     pub arr: u32, // auto repeat shift. 좌우 이동 클릭시,
 
-    pub on_left_move: u32,  // left move 클릭한 시간 (밀리초 단위)
-    pub on_right_move: u32, // right move 클릭한 시간 (밀리초 단위)
-    pub on_down_move: u32,  // down move 클릭한 시간 (밀리초 단위)
+    pub on_left_move: Option<Instant>,  // left move 클릭한 시작시간
+    pub on_right_move: Option<Instant>, // right move 클릭한 시작시간
+    pub on_down_move: Option<Instant>,  // down move 클릭한 시작시간
 }
 
 impl GameInfo {
@@ -113,9 +115,9 @@ impl GameInfo {
             arr: 0,   //미사용
             running_time: 0,
             lock_delay_count: 0,
-            on_left_move: 0,
-            on_right_move: 0,
-            on_down_move: 0,
+            on_left_move: None,
+            on_right_move: None,
+            on_down_move: None,
         }
     }
 
@@ -674,9 +676,9 @@ impl GameInfo {
 
     // 키 클릭시간 기록 초기화
     pub fn init_key_click_time(&mut self) -> Option<()> {
-        self.on_left_move = 0;
-        self.on_right_move = 0;
-        self.on_down_move = 0;
+        self.on_left_move = None;
+        self.on_right_move = None;
+        self.on_down_move = None;
 
         Some(())
     }

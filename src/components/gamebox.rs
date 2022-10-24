@@ -10,6 +10,7 @@ use crate::js_bind::focus::focus;
 pub fn game_box() -> Html {
     let game_manager = GameManager::new();
     let game_info = Arc::clone(&game_manager.game_info);
+    let _game_info = Arc::clone(&game_manager.game_info);
 
     let start_disabled = use_state(|| false);
 
@@ -58,7 +59,23 @@ pub fn game_box() -> Html {
         }
     });
 
-    let onkeyup = Callback::from(move |_event: KeyboardEvent| {});
+    let game_info = _game_info;
+
+    let onkeyup = Callback::from(move |event: KeyboardEvent| {
+        match event.key_code() {
+            37 => {
+                game_info.lock().unwrap().on_left_move = None;
+            } // left move
+            39 => {
+                game_info.lock().unwrap().on_right_move = None;
+            } // right move
+            38 => {} // up move
+            40 => {
+                game_info.lock().unwrap().on_down_move = None;
+            } // down move
+            _ => {}
+        }
+    });
 
     html! {
         <div id="gamebox" tabindex="0" class="flex content-start" {onkeydown} {onkeyup} onclick={Callback::from(|_| {
