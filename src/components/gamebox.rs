@@ -58,7 +58,7 @@ pub fn game_box() -> Html {
         }
     });
 
-    let onkeyup = Callback::from(move |event: KeyboardEvent| {});
+    let onkeyup = Callback::from(move |_event: KeyboardEvent| {});
 
     html! {
         <div id="gamebox" tabindex="0" class="flex content-start" {onkeydown} {onkeyup} onclick={Callback::from(|_| {

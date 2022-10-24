@@ -51,6 +51,10 @@ pub struct GameInfo {
     pub sdf: u32, // soft drop fast. 소프트 드랍 속도
     pub das: u32, // delay auto shift. 밀리초 단위.
     pub arr: u32, // auto repeat shift. 좌우 이동 클릭시,
+
+    pub on_left_move: u32,  // left move 클릭한 시간 (밀리초 단위)
+    pub on_right_move: u32, // right move 클릭한 시간 (밀리초 단위)
+    pub on_down_move: u32,  // down move 클릭한 시간 (밀리초 단위)
 }
 
 impl GameInfo {
@@ -109,6 +113,9 @@ impl GameInfo {
             arr: 0,   //미사용
             running_time: 0,
             lock_delay_count: 0,
+            on_left_move: 0,
+            on_right_move: 0,
+            on_down_move: 0,
         }
     }
 
@@ -665,6 +672,15 @@ impl GameInfo {
         Some(())
     }
 
+    // 키 클릭시간 기록 초기화
+    pub fn init_key_click_time(&mut self) -> Option<()> {
+        self.on_left_move = 0;
+        self.on_right_move = 0;
+        self.on_down_move = 0;
+
+        Some(())
+    }
+
     // 가방 초기화
     pub fn init_bag(&mut self) -> Option<()> {
         self.bag = VecDeque::new();
@@ -682,7 +698,7 @@ impl GameInfo {
         Some(())
     }
 
-    pub fn init_running_time(&mut self) -> Option<()> {
+    pub fn init_runningtime(&mut self) -> Option<()> {
         self.running_time = 0;
         Some(())
     }
@@ -693,7 +709,8 @@ impl GameInfo {
         self.init_board()?;
         self.init_score()?;
         self.init_context()?;
-        self.init_running_time()?;
+        self.init_runningtime()?;
+        self.init_key_click_time()?;
 
         Some(())
     }
