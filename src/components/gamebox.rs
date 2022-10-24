@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use gloo_timers::callback::Timeout;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_state, Callback};
 
@@ -32,9 +33,29 @@ pub fn game_box() -> Html {
         match event.key_code() {
             37 => {
                 game_info.lock().unwrap().left_move();
+                game_info.lock().unwrap().on_left_move = Some(instant::Instant::now());
+
+                let game_info = Arc::clone(&game_info);
+
+                Timeout::new(500, move || {
+                    if game_info.lock().unwrap().on_left_move.is_some() {
+                        game_info.lock().unwrap().left_move_end();
+                    }
+                })
+                .forget();
             } // left move
             39 => {
                 game_info.lock().unwrap().right_move();
+                game_info.lock().unwrap().on_right_move = Some(instant::Instant::now());
+
+                let game_info = Arc::clone(&game_info);
+
+                Timeout::new(500, move || {
+                    if game_info.lock().unwrap().on_right_move.is_some() {
+                        game_info.lock().unwrap().right_move_end();
+                    }
+                })
+                .forget();
             } // right move
             38 => {} // up move
             40 => {
