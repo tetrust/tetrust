@@ -17,6 +17,7 @@ log = "0.4.14"
 gloo-timers = { version = "0.2.2", features = ["futures"]} 
 futures-util = "0.3.19"
 wasm-bindgen-futures = "0.4.28"
+instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
 
 [dependencies.web-sys]
 version = "0.3.4"
