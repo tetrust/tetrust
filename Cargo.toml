@@ -1,0 +1,29 @@
+[package]
+name = "rustetris"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+yew = "0.19"
+rand = "0.8.4"
+getrandom = { version = "0.2", features = ["js"] }
+js-sys = "0.3.55"
+wasm-bindgen = "0.2.83"
+itertools = "0.10.3"
+wasm-logger = "0.2.0"
+log = "0.4.14"
+gloo-timers = { version = "0.2.2", features = ["futures"]} 
+futures-util = "0.3.19"
+wasm-bindgen-futures = "0.4.28"
+
+[dependencies.web-sys]
+version = "0.3.4"
+features = [
+  'CanvasRenderingContext2d',
+  'Document',
+  'Element',
+  'HtmlCanvasElement',
+  'Window',
+]
