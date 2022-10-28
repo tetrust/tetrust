@@ -1,0 +1,21 @@
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/install@v0.1
+      with:
+        crate: trunk
+        version: latest
+    - run: cargo audit
+
+    - name: rustup
+      run: rustup target add wasm32-unknown-unknown
+
+    - name: build
+      run: trunk build --release
