@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::game::cell::Cell;
 
@@ -98,30 +98,15 @@ impl BlockShape {
         block: Block::I,
         rotation_count: 0,
         cells: [
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
             [
                 I_DEFAULT_COLOR,
                 I_DEFAULT_COLOR,
                 I_DEFAULT_COLOR,
                 I_DEFAULT_COLOR,
             ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -134,30 +119,15 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                Cell::Empty,
-                Cell::Empty,
-                L_DEFAULT_COLOR,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, L_DEFAULT_COLOR, Cell::Empty],
             [
                 L_DEFAULT_COLOR,
                 L_DEFAULT_COLOR,
                 L_DEFAULT_COLOR,
                 Cell::Empty,
             ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -170,30 +140,15 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                J_DEFAULT_COLOR,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [J_DEFAULT_COLOR, Cell::Empty, Cell::Empty, Cell::Empty],
             [
                 J_DEFAULT_COLOR,
                 J_DEFAULT_COLOR,
                 J_DEFAULT_COLOR,
                 Cell::Empty,
             ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -206,30 +161,10 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                Cell::Empty,
-                O_DEFAULT_COLOR,
-                O_DEFAULT_COLOR,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                O_DEFAULT_COLOR,
-                O_DEFAULT_COLOR,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, O_DEFAULT_COLOR, O_DEFAULT_COLOR, Cell::Empty],
+            [Cell::Empty, O_DEFAULT_COLOR, O_DEFAULT_COLOR, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -242,30 +177,10 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                Cell::Empty,
-                S_DEFAULT_COLOR,
-                S_DEFAULT_COLOR,
-                Cell::Empty,
-            ],
-            [
-                S_DEFAULT_COLOR,
-                S_DEFAULT_COLOR,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, S_DEFAULT_COLOR, S_DEFAULT_COLOR, Cell::Empty],
+            [S_DEFAULT_COLOR, S_DEFAULT_COLOR, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -278,30 +193,10 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                Z_DEFAULT_COLOR,
-                Z_DEFAULT_COLOR,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Z_DEFAULT_COLOR,
-                Z_DEFAULT_COLOR,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Z_DEFAULT_COLOR, Z_DEFAULT_COLOR, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Z_DEFAULT_COLOR, Z_DEFAULT_COLOR, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -314,30 +209,15 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                Cell::Empty,
-                T_DEFAULT_COLOR,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, T_DEFAULT_COLOR, Cell::Empty, Cell::Empty],
             [
                 T_DEFAULT_COLOR,
                 T_DEFAULT_COLOR,
                 T_DEFAULT_COLOR,
                 Cell::Empty,
             ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 
@@ -350,30 +230,10 @@ impl BlockShape {
         rotation_count: 0,
 
         cells: [
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
-            [
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-                Cell::Empty,
-            ],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
+            [Cell::Empty, Cell::Empty, Cell::Empty, Cell::Empty],
         ],
     };
 }

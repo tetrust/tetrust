@@ -1,0 +1,31 @@
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - uses: jetli/trunk-action@v0.1.0
+      with:
+        version: 'latest'
+        
+    - name: rustup
+      run: rustup target add wasm32-unknown-unknown
+      
+    - name: build
+      run: trunk build --release
+
+    - name: Publish to Cloudflare Pages
+      uses: cloudflare/pages-action@1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }} 
+        projectName: rustetris-page
+        directory: ./dist
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}

@@ -1,8 +1,10 @@
 use std::collections::VecDeque;
 
+use instant::Instant;
+
 use crate::game::{
-    valid_block, valid_tspin, BagType, ClearInfo, GameRecord, BlockShape, Point, SpinType,
-    Board, Cell,
+    valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
+    SpinType,
 };
 
 use crate::js_bind::write_text::write_text;
@@ -17,26 +19,26 @@ pub struct GameInfo {
 
     pub running_time: u128, // 실행시간 (밀리초)
 
-    pub on_play: bool,                   //게임 진행중 여부
-    pub current_position: Point,         //현재 미노 좌표
-    pub current_block: Option<BlockShape>, //현재 미노 형태
+    pub on_play: bool,                     //게임 진행중 여부
+    pub current_position: Point,           //현재 블럭 좌표
+    pub current_block: Option<BlockShape>, //현재 블럭 형태
 
-    pub freezed: bool, //현재 미노가 보드에 붙었는지?
+    pub freezed: bool, //현재 블럭이 보드에 붙었는지?
     pub lose: bool,    //현재 게임 오버 여부
 
-    pub next_count: i32,          // 넥스트 개수
+    pub next_count: i32,           // 넥스트 개수
     pub bag: VecDeque<BlockShape>, // 현재 가방
 
-    pub board: Board, //테트리스 보드
+    pub board: Board, // 보드
 
     pub render_interval: u64, //렌더링 시간간격(밀리초)
     pub tick_interval: u64,   //틱당 시간간격(밀리초)
 
     pub bag_mode: BagType, //가방 순환 규칙 사용여부 (false면 완전 랜덤. true면 한 묶음에서 랜덤)
-    pub block_list: Vec<BlockShape>, //미노 리스트
+    pub block_list: Vec<BlockShape>, //블럭 리스트
 
-    pub hold: Option<BlockShape>, // 홀드한 미노
-    pub hold_used: bool,         // 현재 홀드 사용권을 소모했는지 여부
+    pub hold: Option<BlockShape>, // 홀드한 블럭
+    pub hold_used: bool,          // 현재 홀드 사용권을 소모했는지 여부
 
     pub combo: Option<u32>, // 현재 콤보 (제로콤보는 None, 지웠을 경우 0부터 시작)
     pub back2back: Option<u32>, // 현재 백투백 스택 (제로는 None, 지웠을 경우 0부터 시작)
@@ -45,12 +47,16 @@ pub struct GameInfo {
 
     pub in_spin: SpinType, // 현재 스핀 상태 확인
 
-    pub lock_delay: u32, // 바닥에 닿을때 고정하기까지의 딜레이. 밀리초 단위.
+    pub lock_delay: u32,      // 바닥에 닿을때 고정하기까지의 딜레이. 밀리초 단위.
     pub lock_delay_count: u8, // 하좌우이동, 좌우회전 성공 시 록딜레이 카운트가 올라감. 틱스레드에서 변화를 읽고 start를 초기화. 8이상이면 안올라감
 
     pub sdf: u32, // soft drop fast. 소프트 드랍 속도
     pub das: u32, // delay auto shift. 밀리초 단위.
     pub arr: u32, // auto repeat shift. 좌우 이동 클릭시,
+
+    pub on_left_move: Option<Instant>,  // left move 클릭한 시작시간
+    pub on_right_move: Option<Instant>, // right move 클릭한 시작시간
+    pub on_down_move: Option<Instant>,  // down move 클릭한 시작시간
 }
 
 impl GameInfo {
@@ -108,11 +114,14 @@ impl GameInfo {
             sdf: 0,   //미사용
             arr: 0,   //미사용
             running_time: 0,
-            lock_delay_count: 0,  
+            lock_delay_count: 0,
+            on_left_move: None,
+            on_right_move: None,
+            on_down_move: None,
         }
     }
 
-    // 가방에서 미노를 새로 가져옴.
+    // 가방에서 블럭를 새로 가져옴.
     pub fn get_block(&mut self) -> BlockShape {
         // 현재 가방이 비어있거나, 개수가 모자란다면 충전
         self.manage_bag();
@@ -162,8 +171,7 @@ impl GameInfo {
                             *cell = Cell::Empty
                         }
                     } else {
-                        self.board.cells[e as usize] =
-                            self.board.cells[(e - 1) as usize].clone()
+                        self.board.cells[e as usize] = self.board.cells[(e - 1) as usize].clone()
                     }
                 }
             }
@@ -269,10 +277,10 @@ impl GameInfo {
         }
     }
 
-    // 현재 미노를 고정
+    // 현재 블럭를 고정
     fn fix_current_block(&mut self) {
         if let Some(current_block) = self.current_block {
-            // 블럭 고정 후 현재 미노에서 제거
+            // 블럭 고정 후 현재 블럭에서 제거
             self.board
                 .write_current_block(current_block.cells, self.current_position);
             self.current_block = None;
@@ -335,9 +343,35 @@ impl GameInfo {
 
             if valid_block(&self.board, &current_block.cells, next_position) {
                 self.current_position = next_position;
-                if !valid_block(&self.board, &current_block.cells, self.current_position.add_y(1)) { 
+                if !valid_block(
+                    &self.board,
+                    &current_block.cells,
+                    self.current_position.add_y(1),
+                ) {
                     self.lock_delay_count += 1;
                 }
+            }
+        }
+    }
+
+    // 왼쪽 끝까지 이동
+    pub fn left_move_end(&mut self) {
+        if let Some(current_block) = self.current_block {
+            loop {
+                let next_position = self.current_position.clone().add_x(-1);
+
+                if valid_block(&self.board, &current_block.cells, next_position) {
+                    self.current_position = next_position;
+                } else {
+                    break;
+                }
+            }
+            if !valid_block(
+                &self.board,
+                &current_block.cells,
+                self.current_position.add_y(1),
+            ) {
+                self.lock_delay_count += 1;
             }
         }
     }
@@ -348,10 +382,36 @@ impl GameInfo {
             let next_position = self.current_position.clone().add_x(1);
 
             if valid_block(&self.board, &current_block.cells, next_position) {
-                self.current_position = next_position; 
-                if !valid_block(&self.board, &current_block.cells, self.current_position.add_y(1)) { 
+                self.current_position = next_position;
+                if !valid_block(
+                    &self.board,
+                    &current_block.cells,
+                    self.current_position.add_y(1),
+                ) {
                     self.lock_delay_count += 1;
                 }
+            }
+        }
+    }
+
+    // 오른쪽 끝까지 이동
+    pub fn right_move_end(&mut self) {
+        if let Some(current_block) = self.current_block {
+            loop {
+                let next_position = self.current_position.clone().add_x(1);
+
+                if valid_block(&self.board, &current_block.cells, next_position) {
+                    self.current_position = next_position;
+                } else {
+                    break;
+                }
+            }
+            if !valid_block(
+                &self.board,
+                &current_block.cells,
+                self.current_position.add_y(1),
+            ) {
+                self.lock_delay_count += 1;
             }
         }
     }
@@ -362,14 +422,22 @@ impl GameInfo {
             if current_block.block == Block::O {
                 return;
             }
-            let real_length = if current_block.block == Block::I { 4 } else { 3 };
+            let real_length = if current_block.block == Block::I {
+                4
+            } else {
+                3
+            };
             let mut next_shape = current_block.cells.clone();
 
             rotate_left(&mut next_shape, real_length);
             if valid_block(&self.board, &next_shape, self.current_position) {
                 current_block.rotation_count = (current_block.rotation_count + 3) % 4;
-                current_block.cells = next_shape; 
-                if !valid_block(&self.board, &current_block.cells, self.current_position.add_y(1)){ 
+                current_block.cells = next_shape;
+                if !valid_block(
+                    &self.board,
+                    &current_block.cells,
+                    self.current_position.add_y(1),
+                ) {
                     self.lock_delay_count += 1;
                 }
 
@@ -395,10 +463,13 @@ impl GameInfo {
                         current_block.rotation_count = (current_block.rotation_count + 3) % 4;
                         self.current_position = next_position;
                         current_block.cells = next_shape;
-                        if !valid_block(&self.board, &current_block.cells, self.current_position.add_y(1)){ 
+                        if !valid_block(
+                            &self.board,
+                            &current_block.cells,
+                            self.current_position.add_y(1),
+                        ) {
                             self.lock_delay_count += 1;
                         }
-                
 
                         if current_block.block == Block::T {
                             self.in_spin =
@@ -419,14 +490,22 @@ impl GameInfo {
                 return;
             }
 
-            let real_length = if current_block.block == Block::I { 4 } else { 3 };
+            let real_length = if current_block.block == Block::I {
+                4
+            } else {
+                3
+            };
 
             let mut next_shape = current_block.cells.clone();
             rotate_right(&mut next_shape, real_length);
             if valid_block(&self.board, &next_shape, self.current_position) {
                 current_block.rotation_count = (current_block.rotation_count + 1) % 4;
                 current_block.cells = next_shape;
-                if !valid_block(&self.board, &current_block.cells, self.current_position.add_y(1)){ 
+                if !valid_block(
+                    &self.board,
+                    &current_block.cells,
+                    self.current_position.add_y(1),
+                ) {
                     self.lock_delay_count += 1;
                 }
 
@@ -452,7 +531,11 @@ impl GameInfo {
                         current_block.rotation_count = (current_block.rotation_count + 1) % 4;
                         self.current_position = next_position;
                         current_block.cells = next_shape;
-                        if !valid_block(&self.board, &current_block.cells, self.current_position.add_y(1)){ 
+                        if !valid_block(
+                            &self.board,
+                            &current_block.cells,
+                            self.current_position.add_y(1),
+                        ) {
                             self.lock_delay_count += 1;
                         }
                         if current_block.block == Block::T {
@@ -511,16 +594,18 @@ impl GameInfo {
         }
     }
 
-    // 미노 홀드
+    // 홀드
     pub fn hold(&mut self) {
         if !self.hold_used {
             match self.hold {
                 Some(hold) => {
+                    self.current_position = Point::start_point(self.board.column_count);
                     let temp = self.current_block;
                     self.current_block = Some(hold);
                     self.hold = temp;
                 }
                 None => {
+                    self.current_position = Point::start_point(self.board.column_count);
                     self.hold = self.current_block;
                     self.current_block = None;
                     self.fill_bag();
@@ -535,25 +620,8 @@ impl GameInfo {
 
     // 180도 회전
     pub fn double_rotate(&mut self) {
-        if let Some(current_block) = &mut self.current_block {
-            if current_block.block == Block::O {
-                return;
-            }
-
-            let real_length = if current_block.block == Block::I { 4 } else { 3 };
-
-            let mut next_shape = current_block.cells.clone();
-            rotate_right(&mut next_shape, real_length);
-            rotate_right(&mut next_shape, real_length);
-
-            if valid_block(
-                &self.board,
-                &current_block.cells,
-                self.current_position,
-            ) {
-                current_block.cells = next_shape;
-            }
-        }
+        self.left_rotate();
+        self.left_rotate();
     }
 
     // 게임오버
@@ -591,6 +659,15 @@ impl GameInfo {
         Some(())
     }
 
+    // 키 클릭시간 기록 초기화
+    pub fn init_key_click_time(&mut self) -> Option<()> {
+        self.on_left_move = None;
+        self.on_right_move = None;
+        self.on_down_move = None;
+
+        Some(())
+    }
+
     // 가방 초기화
     pub fn init_bag(&mut self) -> Option<()> {
         self.bag = VecDeque::new();
@@ -608,7 +685,7 @@ impl GameInfo {
         Some(())
     }
 
-    pub fn init_running_time(&mut self) -> Option<()> {
+    pub fn init_runningtime(&mut self) -> Option<()> {
         self.running_time = 0;
         Some(())
     }
@@ -619,7 +696,8 @@ impl GameInfo {
         self.init_board()?;
         self.init_score()?;
         self.init_context()?;
-        self.init_running_time()?;
+        self.init_runningtime()?;
+        self.init_key_click_time()?;
 
         Some(())
     }

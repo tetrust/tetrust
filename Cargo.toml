@@ -1,5 +1,9 @@
 [package]
+<<<<<<< HEAD
 name = "rustetrust"
+=======
+name = "tetrust"
+>>>>>>> 116ae438d93b6b859648d1e0079664d29c9f142c
 version = "0.2.0"
 edition = "2021"
 
@@ -20,6 +24,7 @@ wasm-bindgen-futures = "0.4.28"
 instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
 serde = "1.0.147"
 serde_json = "1.0.87"
+keycodes = "0.1.0"
 
 [dependencies.web-sys]
 version = "0.3.4"

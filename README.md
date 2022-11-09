@@ -1,9 +1,7 @@
 # tetrust
 
-Yew.rs, Canvas로 구현된 웹 테트리스
-      
-프로젝트는 https://github.com/tetrust/tetrust-front로 이전함   
- 
+Yew.rs, Canvas로 구현된 웹 퍼즐게임
+
 ## 실행법
 
 기본설정

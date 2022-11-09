@@ -2,12 +2,12 @@
 
 use itertools::Itertools;
 
-use crate::game::{BlockShapeCells, Point, Cell};
+use crate::game::{BlockShapeCells, Cell, Point};
 
 #[derive(Debug, Clone)]
 pub struct Board {
-    pub column_count: u32,     //테트리스 열 개수(가로 길이)
-    pub row_count: u32,        //테트리스 행 개수(세로 길이)
+    pub column_count: u32,     // 열 개수(가로 길이)
+    pub row_count: u32,        // 행 개수(세로 길이)
     pub hidden_row_count: u32, // 숨겨진 상단 행 개수
     pub board_width: u32,
     pub board_height: u32,
