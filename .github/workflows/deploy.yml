@@ -19,3 +19,12 @@ jobs:
 
     - name: build
       run: trunk build --release
+
+    - name: Publish to Cloudflare Pages
+      uses: cloudflare/pages-action@1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }} 
+        projectName: rustetris-page
+        directory: /dist
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
