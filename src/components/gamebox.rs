@@ -81,8 +81,26 @@ pub fn game_box() -> Html {
         }
     });
 
+    let game_info = _game_info;
+
+    let onkeyup = Callback::from(move |event: KeyboardEvent| {
+        match event.key_code() {
+            37 => {
+                game_info.lock().unwrap().on_left_move = None;
+            } // left move
+            39 => {
+                game_info.lock().unwrap().on_right_move = None;
+            } // right move
+            38 => {} // up move
+            40 => {
+                game_info.lock().unwrap().on_down_move = None;
+            } // down move
+            _ => {}
+        }
+    });
+
     html! {
-        <div id="gamebox" tabindex="0" class="flex content-start" {onkeydown} onclick={Callback::from(|_| {
+        <div id="gamebox" tabindex="0" class="flex content-start" {onkeydown} {onkeyup} onclick={Callback::from(|_| {
             log::info!("test");
             GameManager::empty_render();
         })}>
@@ -126,7 +144,7 @@ pub fn game_box() -> Html {
             </div>
 
             <audio autoplay={true} loop={true}>
-                <source src={"resource/sound/tetrust.ogg"} type={"audio/mp3"}/>
+                <source src={"/resource/sound/tetrust.ogg"} type={"audio/mp3"}/>
             </audio>
         </div>
     }

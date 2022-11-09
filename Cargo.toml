@@ -1,9 +1,5 @@
 [package]
-<<<<<<< HEAD
-name = "rustetrust"
-=======
 name = "tetrust"
->>>>>>> 116ae438d93b6b859648d1e0079664d29c9f142c
 version = "0.2.0"
 edition = "2021"
 
