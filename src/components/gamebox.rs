@@ -58,14 +58,13 @@ pub fn game_box() -> Html {
                 })
                 .forget();
             } // right move
-            38 => {} // up move
             40 => {
                 game_info.lock().unwrap().soft_drop();
             } // down move
             90 => {
                 game_info.lock().unwrap().left_rotate();
             } // z
-            88 => {
+            88 | 38 => {
                 game_info.lock().unwrap().right_rotate();
             } // x
             65 => {
