@@ -1,5 +1,5 @@
 [package]
-name = "rustetrust"
+name = "tetrust"
 version = "0.2.0"
 edition = "2021"
 
@@ -20,6 +20,7 @@ wasm-bindgen-futures = "0.4.28"
 instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
 serde = "1.0.147"
 serde_json = "1.0.87"
+yew-router = "0.16.0"
 
 [dependencies.web-sys]
 version = "0.3.4"

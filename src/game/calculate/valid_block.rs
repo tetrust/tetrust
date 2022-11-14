@@ -1,6 +1,6 @@
-use crate::game::{BlockShapeCells, Point, Board, Cell, SpinType, BlockShape};
+use crate::game::{BlockShape, BlockShapeCells, Board, Cell, Point, SpinType};
 
-// 미노 충돌여부 검증
+// 블럭 충돌여부 검증
 pub fn valid_block(board: &Board, block: &BlockShapeCells, point: Point) -> bool {
     let block_row_count = block.len();
     let block_column_count = block[0].len();
@@ -59,7 +59,7 @@ pub fn valid_block(board: &Board, block: &BlockShapeCells, point: Point) -> bool
                         continue;
                     }
 
-                    // 미노가 존재함에도 존재하지 않는 영역에 침범 시도
+                    // 블럭이 존재함에도 존재하지 않는 영역에 침범 시도
                     return false;
                 }
             }
@@ -72,26 +72,39 @@ pub fn valid_block(board: &Board, block: &BlockShapeCells, point: Point) -> bool
 pub fn valid_tspin(board: &Board, block: &BlockShape, point: Point, kick_try: usize) -> SpinType {
     let mut corner_fill_count: usize = 0; // if >=3 return true
     let rotation_count = block.rotation_count;
-    let mut head_fill_count:usize = 0;
+    let mut head_fill_count: usize = 0;
 
     for x in [point.x, point.x + 2] {
         for y in [point.y, point.y + 2] {
             //해당 위치가 보드 하좌우를 넘어서는 경우
-            if x < 0 || x >= board.column_count.into() || y >= board.row_count as i64
-            {
+            if x < 0 || x >= board.column_count.into() || y >= board.row_count as i64 {
                 corner_fill_count += 1;
                 continue;
-            }
-            else {
+            } else {
                 if !board.cells[y as usize][x as usize].is_empty() {
                     corner_fill_count += 1;
-                    match rotation_count{
-                        0 => if y - point.y ==0 {head_fill_count += 1;},
-                        1 => if x - point.x ==2 {head_fill_count += 1;},
-                        2 => if y - point.y ==2 {head_fill_count += 1;},
-                        3 => if x - point.x ==0 {head_fill_count += 1;},
+                    match rotation_count {
+                        0 => {
+                            if y - point.y == 0 {
+                                head_fill_count += 1;
+                            }
+                        }
+                        1 => {
+                            if x - point.x == 2 {
+                                head_fill_count += 1;
+                            }
+                        }
+                        2 => {
+                            if y - point.y == 2 {
+                                head_fill_count += 1;
+                            }
+                        }
+                        3 => {
+                            if x - point.x == 0 {
+                                head_fill_count += 1;
+                            }
+                        }
                         _ => {}
-            
                     }
                     continue;
                 }
@@ -99,15 +112,13 @@ pub fn valid_tspin(board: &Board, block: &BlockShape, point: Point, kick_try: us
         }
     }
 
-    if corner_fill_count>=3 {
-        if head_fill_count == 2 || kick_try == 3
-        {
+    if corner_fill_count >= 3 {
+        if head_fill_count == 2 || kick_try == 3 {
             return SpinType::TSpin;
-        }
-        else 
-        {
+        } else {
             return SpinType::Mini;
         }
+    } else {
+        return SpinType::None;
     }
-    else {return SpinType::None;}
 }

@@ -1,4 +1,4 @@
-// 테트리스 가방 타입
+// 가방 타입
 #[derive(Debug)]
 pub enum BagType {
     NoBag,    // 가방 없음

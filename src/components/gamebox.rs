@@ -4,6 +4,7 @@ use gloo_timers::callback::Timeout;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_state, Callback};
 
+use crate::constants::keycode;
 use crate::game::manager::GameManager;
 use crate::js_bind::focus::focus;
 
@@ -31,7 +32,7 @@ pub fn game_box() -> Html {
 
     let onkeydown = Callback::from(move |event: KeyboardEvent| {
         match event.key_code() {
-            37 => {
+            keycode::LEFT => {
                 game_info.lock().unwrap().left_move();
                 game_info.lock().unwrap().on_left_move = Some(instant::Instant::now());
 
@@ -44,7 +45,7 @@ pub fn game_box() -> Html {
                 })
                 .forget();
             } // left move
-            39 => {
+            keycode::RIGHT => {
                 game_info.lock().unwrap().right_move();
                 game_info.lock().unwrap().on_right_move = Some(instant::Instant::now());
 
@@ -57,23 +58,22 @@ pub fn game_box() -> Html {
                 })
                 .forget();
             } // right move
-            38 => {} // up move
-            40 => {
+            keycode::DOWN => {
                 game_info.lock().unwrap().soft_drop();
             } // down move
-            90 => {
+            keycode::Z => {
                 game_info.lock().unwrap().left_rotate();
             } // z
-            88 => {
+            keycode::X => {
                 game_info.lock().unwrap().right_rotate();
             } // x
-            65 => {
+            keycode::A => {
                 game_info.lock().unwrap().double_rotate();
             } // a
-            32 => {
+            keycode::SPACE => {
                 game_info.lock().unwrap().hard_drop();
             } // spacebar
-            16 => {
+            keycode::SHIFT => {
                 game_info.lock().unwrap().hold();
             } // shift
             _ => {}
@@ -84,14 +84,13 @@ pub fn game_box() -> Html {
 
     let onkeyup = Callback::from(move |event: KeyboardEvent| {
         match event.key_code() {
-            37 => {
+            keycode::LEFT => {
                 game_info.lock().unwrap().on_left_move = None;
             } // left move
-            39 => {
+            keycode::RIGHT => {
                 game_info.lock().unwrap().on_right_move = None;
             } // right move
-            38 => {} // up move
-            40 => {
+            keycode::DOWN => {
                 game_info.lock().unwrap().on_down_move = None;
             } // down move
             _ => {}
@@ -143,7 +142,7 @@ pub fn game_box() -> Html {
             </aside>
 
             <audio autoplay={true} loop={true}>
-                <source src={"resource/sound/rustetris.ogg"} type={"audio/mp3"}/>
+                <source src={"/resource/sound/tetrust.ogg"} type={"audio/mp3"}/>
             </audio>
         </article>
     }

@@ -27,5 +27,4 @@ impl Point {
         self.y = self.y + y;
         self
     }
-
 }

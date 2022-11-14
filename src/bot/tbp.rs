@@ -57,7 +57,6 @@ impl Default for TBPStart {
     }
 }
 
-
 #[derive(Debug, Deserialize, Serialize)]
 pub enum TBPOrientation {
     #[serde(rename = "north")]
