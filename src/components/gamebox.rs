@@ -98,52 +98,52 @@ pub fn game_box() -> Html {
     });
 
     html! {
-        <div id="gamebox" tabindex="0" class="flex content-start" {onkeydown} {onkeyup} onclick={Callback::from(|_| {
+        <article id="gamebox" tabindex="0" class="flex justify-between" {onkeydown} onclick={Callback::from(|_| {
             log::info!("test");
             GameManager::empty_render();
         })}>
-            <div class="flex flex-col m-5 justify-start">
-                <div class="mb-[150px]">
-                    <p class="font-mono text-2xl text-center">{"Hold"}</p>
-                    <canvas id="hold-canvas" class="" width="120" height="120"></canvas>
-                </div>
+            <aside class="flex flex-col m-5 justify-between">
+                <dl class="mb-[150px] side-canvas">
+                    <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
+                    <dd><canvas id="hold-canvas" class="" width="120" height="120"></canvas></dd>
+                </dl>
 
-                <div class="flex flex-col justify-between mb-[80px]">
-                    <div id="combo" class="font-mono text-base text-center">{" "}</div>
-                    <div id="back2back" class="font-mono text-base text-center">{" "}</div>
-                    <div id="message" class="font-mono text-base text-center">{" "}</div>
-                </div>
+                <dl class="flex flex-col justify-between mb-[80px]">
+                    <dt id="combo" class="font-mono text-base text-center">{" "}</dt>
+                    <dt id="back2back" class="font-mono text-base text-center">{" "}</dt>
+                    <dt id="message" class="font-mono text-base text-center">{" "}</dt>
+                </dl>
 
                 <div class="flex flex-col justify-between mb-[30px]">
-                    <div class="flex flex-row justify-between">
-                        <div class="font-mono text-base	">{"Score"}</div>
-                        <div id="score">{"0"}</div>
-                    </div>
-                    <div class="flex flex-row justify-between">
-                        <div class="font-mono text-base	content-start">{"Quad"}</div>
-                        <div id="quad">{"0"}</div>
-                    </div>
-                    <div class="flex flex-row justify-between">
-                        <div class="font-mono text-base	">{"PC"}</div>
-                        <div id="pc">{"0"}</div>
-                    </div>
+                    <dl class="flex flex-row justify-between">
+                        <dt class="font-mono text-base	">{"Score"}</dt>
+                        <dd id="score">{"0"}</dd>
+                    </dl>
+                    <dl class="flex flex-row justify-between">
+                        <dt class="font-mono text-base	content-start">{"Quad"}</dt>
+                        <dd id="quad">{"0"}</dd>
+                    </dl>
+                    <dl class="flex flex-row justify-between">
+                        <dt class="font-mono text-base	">{"PC"}</dt>
+                        <dd id="pc">{"0"}</dd>
+                    </dl>
                 </div>
 
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick={onclick} disabled={*start_disabled}>{"Start"}</button>
-            </div>
+            </aside>
 
-            <div class="my-5">
+            <section class="my-5">
                 <canvas id="game-canvas" width="300" height="600"></canvas>
-            </div>
+            </section>
 
-            <div class="m-5">
+            <aside class="m-5  side-canvas">
                 <p class="font-mono text-2xl text-center">{"Next"}</p>
                 <canvas id="next-canvas" class="" width="120" height="520"></canvas>
-            </div>
+            </aside>
 
             <audio autoplay={true} loop={true}>
                 <source src={"/resource/sound/tetrust.ogg"} type={"audio/mp3"}/>
             </audio>
-        </div>
+        </article>
     }
 }
