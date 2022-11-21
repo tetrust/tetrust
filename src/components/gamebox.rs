@@ -11,8 +11,9 @@ use crate::js_bind::focus::focus;
 #[function_component(GameBox)]
 pub fn game_box() -> Html {
     let game_manager = GameManager::new();
-    let game_info = Rc::clone(&game_manager.game_info);
     let _game_info = Rc::clone(&game_manager.game_info);
+
+    let das = _game_info.borrow().das.clone();
 
     let start_disabled = use_state(|| false);
 
@@ -30,39 +31,19 @@ pub fn game_box() -> Html {
         })
     };
 
+    let game_info = Rc::clone(&_game_info);
+
     let onkeydown = Callback::from(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                {
-                    let mut game_info = game_info.borrow_mut();
-                    game_info.left_move();
-                    game_info.on_left_move = Some(instant::Instant::now());
-                }
+                game_info.borrow_mut().on_right_move = None;
 
-                let game_info = Rc::clone(&game_info);
-
-                Timeout::new(500, move || {
-                    if game_info.borrow().on_left_move.is_some() {
-                        game_info.borrow_mut().left_move_end();
-                    }
-                })
-                .forget();
+                game_info.borrow_mut().left_move();
             } // left move
             keycode::RIGHT => {
-                {
-                    let mut game_info = game_info.borrow_mut();
-                    game_info.right_move();
-                    game_info.on_right_move = Some(instant::Instant::now());
-                }
+                game_info.borrow_mut().on_left_move = None;
 
-                let game_info = Rc::clone(&game_info);
-
-                Timeout::new(500, move || {
-                    if game_info.borrow().on_right_move.is_some() {
-                        game_info.borrow_mut().right_move_end();
-                    }
-                })
-                .forget();
+                game_info.borrow_mut().right_move();
             } // right move
             keycode::DOWN => {
                 game_info.borrow_mut().soft_drop();
@@ -86,6 +67,43 @@ pub fn game_box() -> Html {
         }
     });
 
+    let game_info = Rc::clone(&_game_info);
+
+    let onkeypress = Callback::from(move |event: KeyboardEvent| {
+        match event.key_code() {
+            keycode::LEFT => {
+                game_info.borrow_mut().left_move();
+                game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
+
+                let game_info = Rc::clone(&game_info);
+
+                Timeout::new(das, move || {
+                    if game_info.borrow().on_left_move.is_some() {
+                        game_info.borrow_mut().left_move_end();
+                    }
+                })
+                .forget();
+            } // left move
+            keycode::RIGHT => {
+                game_info.borrow_mut().right_move();
+                game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
+
+                let game_info = Rc::clone(&game_info);
+
+                Timeout::new(das, move || {
+                    if game_info.borrow().on_right_move.is_some() {
+                        game_info.borrow_mut().right_move_end();
+                    }
+                })
+                .forget();
+            } // right move
+            keycode::DOWN => {
+                game_info.borrow_mut().soft_drop();
+            } // down move
+            _ => {}
+        }
+    });
+
     let game_info = _game_info;
 
     let _onkeyup = Callback::from(move |event: KeyboardEvent| {
@@ -104,7 +122,7 @@ pub fn game_box() -> Html {
     });
 
     html! {
-        <article id="gamebox" tabindex="0" class="flex justify-between" {onkeydown} onclick={Callback::from(|_| {
+        <article id="gamebox" tabindex="0" class="flex justify-between" {onkeydown} {onkeypress} onclick={Callback::from(|_| {
             log::info!("test");
             GameManager::empty_render();
         })}>
