@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use gloo_timers::callback::Timeout;
 use web_sys::KeyboardEvent;
@@ -11,8 +11,8 @@ use crate::js_bind::focus::focus;
 #[function_component(GameBox)]
 pub fn game_box() -> Html {
     let game_manager = GameManager::new();
-    let game_info = Arc::clone(&game_manager.game_info);
-    let _game_info = Arc::clone(&game_manager.game_info);
+    let game_info = Rc::clone(&game_manager.game_info);
+    let _game_info = Rc::clone(&game_manager.game_info);
 
     let start_disabled = use_state(|| false);
 
@@ -33,48 +33,54 @@ pub fn game_box() -> Html {
     let onkeydown = Callback::from(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                game_info.lock().unwrap().left_move();
-                game_info.lock().unwrap().on_left_move = Some(instant::Instant::now());
+                {
+                    let mut game_info = game_info.borrow_mut();
+                    game_info.left_move();
+                    game_info.on_left_move = Some(instant::Instant::now());
+                }
 
-                let game_info = Arc::clone(&game_info);
+                let game_info = Rc::clone(&game_info);
 
                 Timeout::new(500, move || {
-                    if game_info.lock().unwrap().on_left_move.is_some() {
-                        game_info.lock().unwrap().left_move_end();
+                    if game_info.borrow().on_left_move.is_some() {
+                        game_info.borrow_mut().left_move_end();
                     }
                 })
                 .forget();
             } // left move
             keycode::RIGHT => {
-                game_info.lock().unwrap().right_move();
-                game_info.lock().unwrap().on_right_move = Some(instant::Instant::now());
+                {
+                    let mut game_info = game_info.borrow_mut();
+                    game_info.right_move();
+                    game_info.on_right_move = Some(instant::Instant::now());
+                }
 
-                let game_info = Arc::clone(&game_info);
+                let game_info = Rc::clone(&game_info);
 
                 Timeout::new(500, move || {
-                    if game_info.lock().unwrap().on_right_move.is_some() {
-                        game_info.lock().unwrap().right_move_end();
+                    if game_info.borrow().on_right_move.is_some() {
+                        game_info.borrow_mut().right_move_end();
                     }
                 })
                 .forget();
             } // right move
             keycode::DOWN => {
-                game_info.lock().unwrap().soft_drop();
+                game_info.borrow_mut().soft_drop();
             } // down move
             keycode::Z => {
-                game_info.lock().unwrap().left_rotate();
+                game_info.borrow_mut().left_rotate();
             } // z
             keycode::X => {
-                game_info.lock().unwrap().right_rotate();
+                game_info.borrow_mut().right_rotate();
             } // x
             keycode::A => {
-                game_info.lock().unwrap().double_rotate();
+                game_info.borrow_mut().double_rotate();
             } // a
             keycode::SPACE => {
-                game_info.lock().unwrap().hard_drop();
+                game_info.borrow_mut().hard_drop();
             } // spacebar
             keycode::SHIFT => {
-                game_info.lock().unwrap().hold();
+                game_info.borrow_mut().hold();
             } // shift
             _ => {}
         }
@@ -82,16 +88,16 @@ pub fn game_box() -> Html {
 
     let game_info = _game_info;
 
-    let onkeyup = Callback::from(move |event: KeyboardEvent| {
+    let _onkeyup = Callback::from(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                game_info.lock().unwrap().on_left_move = None;
+                game_info.borrow_mut().on_left_move = None;
             } // left move
             keycode::RIGHT => {
-                game_info.lock().unwrap().on_right_move = None;
+                game_info.borrow_mut().on_right_move = None;
             } // right move
             keycode::DOWN => {
-                game_info.lock().unwrap().on_down_move = None;
+                game_info.borrow_mut().on_down_move = None;
             } // down move
             _ => {}
         }
