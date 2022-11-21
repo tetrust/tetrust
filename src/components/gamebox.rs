@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use gloo_timers::callback::Timeout;
 use web_sys::KeyboardEvent;
-use yew::{function_component, html, use_state, Callback};
+use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
 
 use crate::constants::keycode;
 use crate::game::manager::GameManager;
@@ -17,16 +17,16 @@ pub fn game_box() -> Html {
 
     let start_disabled = use_state(|| false);
 
-    //let _start_disabled = start_disabled.clone();
+    let _start_disabled = start_disabled.clone();
     let onclick = {
-        //let start_disabled = _start_disabled;
+        let _start_disabled = _start_disabled;
 
         Callback::from(move |_| {
             focus("gamebox");
 
             if !game_manager.on_play() {
-                // start_disabled.set(true); // Enabling this causes problems.
-                game_manager.start_game(); /*Using different mutex objects "GameInfo" */
+                //start_disabled.set(true);
+                game_manager.start_game();
             }
         })
     };
@@ -104,7 +104,7 @@ pub fn game_box() -> Html {
         }
     });
 
-    let game_info = _game_info;
+    let game_info = Rc::clone(&_game_info);
 
     let _onkeyup = Callback::from(move |event: KeyboardEvent| {
         match event.key_code() {
@@ -121,11 +121,17 @@ pub fn game_box() -> Html {
         }
     });
 
-    html! {
-        <article id="gamebox" tabindex="0" class="flex justify-between" {onkeydown} {onkeypress} onclick={Callback::from(|_| {
-            log::info!("test");
+    // 최초 렌더링시 호출
+    use_effect_with_deps(
+        move |_| {
             GameManager::empty_render();
-        })}>
+            || ()
+        },
+        (),
+    );
+
+    html! {
+        <article id="gamebox" tabindex="0" class="flex justify-between" {onkeydown} {onkeypress}>
             <aside class="flex flex-col m-5 justify-between">
                 <dl class="mb-[150px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
