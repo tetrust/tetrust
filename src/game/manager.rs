@@ -2,7 +2,6 @@ use futures_util::stream::StreamExt;
 use gloo_timers::future::IntervalStream;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen_futures::spawn_local;
@@ -16,14 +15,14 @@ use crate::options::game_option::GameOption;
 use crate::wasm_bind;
 
 pub struct GameManager {
-    pub game_info: Arc<Mutex<GameInfo>>,
+    pub game_info: Rc<RefCell<GameInfo>>,
 }
 
 impl GameManager {
     pub fn empty_render() {
         let manager = Self::new();
 
-        let game_info = manager.game_info.lock().unwrap();
+        let game_info = manager.game_info.borrow();
         let board = game_info.board.clone();
 
         wasm_bind::render_board(
@@ -48,13 +47,13 @@ impl GameManager {
     pub fn with_option(option: GameOption) -> Self {
         let game_info = GameInfo::with_option(option);
 
-        let game_info = Arc::new(Mutex::new(game_info));
+        let game_info = Rc::new(RefCell::new(game_info));
 
         Self { game_info }
     }
 
     pub fn on_play(&self) -> bool {
-        self.game_info.lock().unwrap().on_play
+        self.game_info.borrow_mut().on_play
     }
 
     pub fn start_game(&self) -> Option<()> {
@@ -62,24 +61,24 @@ impl GameManager {
             return None;
         }
 
-        self.game_info.lock().ok()?.on_play = true;
-        self.game_info.lock().ok()?.lose = false;
+        self.game_info.borrow_mut().on_play = true;
+        self.game_info.borrow_mut().lose = false;
 
         log::info!("GAME START");
 
         // tick - 중력 스레드
-        let game_info = Arc::clone(&self.game_info);
+        let game_info = Rc::clone(&self.game_info);
         let mut former_lock_delay_count: u8 = 0;
         spawn_local(async move {
             // 시작 기준점
             let mut start_point = instant::Instant::now();
 
             let game_info = game_info;
-            let _game_info = Arc::clone(&game_info);
+            let _game_info = Rc::clone(&game_info);
 
             // 기본 100밀리초 단위마다 반복해서 타임 체크 (더 세밀한 제어가 필요하다면 문제없는 선에서 낮춰도 무방)
             let mut future_list = IntervalStream::new(TICK_LOOP_INTERVAL).map(move |_| {
-                let mut game_info = game_info.lock().unwrap();
+                let mut game_info = game_info.borrow_mut();
                 if former_lock_delay_count != game_info.lock_delay_count {
                     if game_info.lock_delay_count < 8 {
                         start_point = instant::Instant::now();
@@ -105,7 +104,7 @@ impl GameManager {
 
             let game_info = _game_info;
             loop {
-                if game_info.lock().unwrap().on_play {
+                if game_info.borrow_mut().on_play {
                     let next = future_list.next();
                     next.await;
                 } else {
@@ -115,13 +114,13 @@ impl GameManager {
         });
 
         // 렌더링 스레드
-        let game_info = Arc::clone(&self.game_info);
+        let game_info = Rc::clone(&self.game_info);
         spawn_local(async move {
             let f = Rc::new(RefCell::new(None));
             let g = f.clone();
 
             *g.borrow_mut() = Some(Closure::new(move || {
-                let game_info = game_info.lock().unwrap();
+                let game_info = game_info.borrow_mut();
 
                 if !game_info.on_play {
                     // Drop our handle to this closure so that it will get cleaned
@@ -196,13 +195,13 @@ impl GameManager {
     }
 
     pub fn end_game(&self) -> Option<()> {
-        self.game_info.lock().ok()?.on_play = false;
+        self.game_info.borrow_mut().on_play = false;
 
         Some(())
     }
 
     pub fn init_running_time(&self) -> Option<()> {
-        let mut game_info = self.game_info.lock().ok().unwrap();
+        let mut game_info = self.game_info.borrow_mut();
         game_info.running_time = 0;
         Some(())
     }

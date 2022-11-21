@@ -12,7 +12,7 @@ pub fn draw_block(
 ) {
     let stroke_size = 0.5;
 
-    context.set_stroke_style(&JsValue::from_str("#000000")); // 테두리 색상
+    context.set_stroke_style(&JsValue::from_str(color)); // 테두리 색상(불투명도 조절 어떻게하나요?)
     context.set_fill_style(&JsValue::from_str(color)); // 내부 색상
     context.fill_rect(
         x,

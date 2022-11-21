@@ -64,14 +64,14 @@ impl Cell {
     pub fn to_color(&self) -> &str {
         match self {
             Self::Empty => "white",
-            Self::Red => "red",
-            Self::Green => "green",
-            Self::Blue => "blue",
-            Self::Purple => "purple",
-            Self::Cyan => "cyan",
-            Self::Orange => "orange",
-            Self::Yellow => "yellow",
-            Self::Ghost => "#d3d3d3",
+            Self::Red => "#db1532",
+            Self::Green => "#5bab08",
+            Self::Blue => "#092fca",
+            Self::Purple => "#6e00ff",
+            Self::Cyan =>"#099dca",
+            Self::Orange =>  "#e35c33",
+            Self::Yellow =>  "#dc9f09",
+            Self::Ghost => "#6d6d6d",
             _ => "white",
         }
     }
