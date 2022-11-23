@@ -13,13 +13,20 @@ use crate::util::{random, rotate_left, rotate_right, KICK_INDEX_3BY3, KICK_INDEX
 
 use super::{calculate_score, Block};
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum GameState {
+    IDLE,
+    PLAYING,
+    GAMEOVER,
+}
+
 #[derive(Debug)]
 pub struct GameInfo {
     pub record: GameRecord,
 
     pub running_time: u128, // 실행시간 (밀리초)
 
-    pub on_play: bool,                     //게임 진행중 여부
+    pub game_state: GameState,                     //게임 진행중 여부
     pub current_position: Point,           //현재 블럭 좌표
     pub current_block: Option<BlockShape>, //현재 블럭 형태
 
@@ -99,7 +106,7 @@ impl GameInfo {
             next_count: 5,
             bag: VecDeque::new(),
             board,
-            on_play: false,
+            game_state: GameState::IDLE,
             lose: false,
             bag_mode,
             block_list,
@@ -305,7 +312,7 @@ impl GameInfo {
 
     // 한칸씩 아래로 내려가는 중력 동작
     pub fn tick(&mut self) {
-        if !self.on_play {
+        if self.game_state != GameState::PLAYING {
             return;
         }
 
@@ -629,10 +636,11 @@ impl GameInfo {
 
     // 게임오버
     fn game_over(&mut self) {
-        self.on_play = false;
+        self.game_state = GameState::GAMEOVER;
         self.lose = true;
         self.current_block = None;
         write_text("message", "Game Over".into());
+        self.init_board();
     }
 
     // 보드 초기화
