@@ -53,7 +53,7 @@ impl GameManager {
     }
 
     pub fn on_play(&self) -> bool {
-        self.game_info.borrow_mut().on_play
+        self.game_info.borrow_mut().playing
     }
 
     pub fn start_game(&self) -> Option<()> {
@@ -61,7 +61,7 @@ impl GameManager {
             return None;
         }
 
-        self.game_info.borrow_mut().on_play = true;
+        self.game_info.borrow_mut().playing = true;
         self.game_info.borrow_mut().lose = false;
 
         log::info!("GAME START");
@@ -104,7 +104,7 @@ impl GameManager {
 
             let game_info = _game_info;
             loop {
-                if game_info.borrow_mut().on_play {
+                if game_info.borrow_mut().playing {
                     let next = future_list.next();
                     next.await;
                 } else {
@@ -122,7 +122,7 @@ impl GameManager {
             *g.borrow_mut() = Some(Closure::new(move || {
                 let game_info = game_info.borrow_mut();
 
-                if !game_info.on_play {
+                if !game_info.playing {
                     // Drop our handle to this closure so that it will get cleaned
                     // up once we return.
                     let _ = f.borrow_mut().take();
@@ -195,7 +195,7 @@ impl GameManager {
     }
 
     pub fn end_game(&self) -> Option<()> {
-        self.game_info.borrow_mut().on_play = false;
+        self.game_info.borrow_mut().playing = false;
 
         Some(())
     }

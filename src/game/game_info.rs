@@ -19,7 +19,7 @@ pub struct GameInfo {
 
     pub running_time: u128, // 실행시간 (밀리초)
 
-    pub on_play: bool,                     //게임 진행중 여부
+    pub playing: bool,                     //게임 진행중 여부
     pub current_position: Point,           //현재 블럭 좌표
     pub current_block: Option<BlockShape>, //현재 블럭 형태
 
@@ -99,7 +99,7 @@ impl GameInfo {
             next_count: 5,
             bag: VecDeque::new(),
             board,
-            on_play: false,
+            playing: false,
             lose: false,
             bag_mode,
             block_list,
@@ -305,7 +305,7 @@ impl GameInfo {
 
     // 한칸씩 아래로 내려가는 중력 동작
     pub fn tick(&mut self) {
-        if !self.on_play {
+        if !self.playing {
             return;
         }
 
@@ -629,7 +629,7 @@ impl GameInfo {
 
     // 게임오버
     fn game_over(&mut self) {
-        self.on_play = false;
+        self.playing = false;
         self.lose = true;
         self.current_block = None;
         write_text("message", "Game Over".into());
