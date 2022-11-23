@@ -1,12 +1,14 @@
 use std::rc::Rc;
 
 use gloo_timers::callback::Timeout;
+use wasm_bindgen::prelude::Closure;
+use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
 
 use crate::constants::keycode;
 use crate::game::manager::GameManager;
-use crate::js_bind::focus::focus;
+use crate::js_bind::document::document;
 
 #[function_component(GameBox)]
 pub fn game_box() -> Html {
@@ -22,8 +24,6 @@ pub fn game_box() -> Html {
         let _start_disabled = _start_disabled;
 
         Callback::from(move |_| {
-            focus("gamebox");
-
             if !game_manager.on_play() {
                 //start_disabled.set(true);
                 game_manager.start_game();
@@ -33,17 +33,43 @@ pub fn game_box() -> Html {
 
     let game_info = Rc::clone(&_game_info);
 
-    let onkeydown = Callback::from(move |event: KeyboardEvent| {
+    let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
                 game_info.borrow_mut().on_right_move = None;
-
                 game_info.borrow_mut().left_move();
+
+                let _game_info = Rc::clone(&game_info);
+                let game_info = Rc::clone(&_game_info);
+
+                Timeout::new(das, move || {
+                    if game_info.borrow().on_left_move.is_some() {
+                        game_info.borrow_mut().left_move_end();
+                    }
+                })
+                .forget();
+
+                let game_info = Rc::clone(&_game_info);
+
+                game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
             } // left move
             keycode::RIGHT => {
-                game_info.borrow_mut().on_left_move = None;
-
+                game_info.borrow_mut().on_right_move = None;
                 game_info.borrow_mut().right_move();
+
+                let _game_info = Rc::clone(&game_info);
+                let game_info = Rc::clone(&_game_info);
+
+                Timeout::new(das, move || {
+                    if game_info.borrow().on_right_move.is_some() {
+                        game_info.borrow_mut().right_move_end();
+                    }
+                })
+                .forget();
+
+                let game_info = Rc::clone(&_game_info);
+
+                game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
             } // right move
             keycode::DOWN => {
                 game_info.borrow_mut().soft_drop();
@@ -65,48 +91,17 @@ pub fn game_box() -> Html {
             } // shift
             _ => {}
         }
-    });
+    }) as Box<dyn FnMut(KeyboardEvent)>);
+
+    document()
+        .add_event_listener_with_callback("keydown", keydown.as_ref().unchecked_ref())
+        .unwrap();
+
+    keydown.forget();
 
     let game_info = Rc::clone(&_game_info);
 
-    let onkeypress = Callback::from(move |event: KeyboardEvent| {
-        match event.key_code() {
-            keycode::LEFT => {
-                game_info.borrow_mut().left_move();
-                game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
-
-                let game_info = Rc::clone(&game_info);
-
-                Timeout::new(das, move || {
-                    if game_info.borrow().on_left_move.is_some() {
-                        game_info.borrow_mut().left_move_end();
-                    }
-                })
-                .forget();
-            } // left move
-            keycode::RIGHT => {
-                game_info.borrow_mut().right_move();
-                game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
-
-                let game_info = Rc::clone(&game_info);
-
-                Timeout::new(das, move || {
-                    if game_info.borrow().on_right_move.is_some() {
-                        game_info.borrow_mut().right_move_end();
-                    }
-                })
-                .forget();
-            } // right move
-            keycode::DOWN => {
-                game_info.borrow_mut().soft_drop();
-            } // down move
-            _ => {}
-        }
-    });
-
-    let game_info = Rc::clone(&_game_info);
-
-    let _onkeyup = Callback::from(move |event: KeyboardEvent| {
+    let keyup = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
                 game_info.borrow_mut().on_left_move = None;
@@ -119,7 +114,13 @@ pub fn game_box() -> Html {
             } // down move
             _ => {}
         }
-    });
+    }) as Box<dyn FnMut(KeyboardEvent)>);
+
+    document()
+        .add_event_listener_with_callback("keyup", keyup.as_ref().unchecked_ref())
+        .unwrap();
+
+    keyup.forget();
 
     // 최초 렌더링시 호출
     use_effect_with_deps(
@@ -131,7 +132,7 @@ pub fn game_box() -> Html {
     );
 
     html! {
-        <article id="gamebox" tabindex="0" class="flex justify-center" {onkeydown} {onkeypress}>
+        <article id="gamebox" tabindex="0" class="flex justify-center">
             <aside class="flex flex-col m-5 justify-between">
                 <dl class="mb-[150px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
