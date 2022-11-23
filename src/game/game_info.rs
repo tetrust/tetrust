@@ -110,14 +110,17 @@ impl GameInfo {
             message: None,
             in_spin: SpinType::None,
             lock_delay: 500,
-            das: 300, //미사용
-            sdf: 0,   //미사용
-            arr: 0,   //미사용
+            das: 300,
+            sdf: 0, //미사용
+            arr: 0, //미사용
             running_time: 0,
             lock_delay_count: 0,
             on_left_move: None,
             on_right_move: None,
             on_down_move: None,
+            // closure: Closure::<Box<dyn FnMut() + 'static>>::new(Box::new(|| {
+            //     log::info!("ㅅㅅㅅㅅ");
+            // })),
         }
     }
 
