@@ -132,7 +132,7 @@ pub fn game_box() -> Html {
     );
 
     html! {
-        <article id="gamebox" tabindex="0" class="flex justify-between">
+        <article id="gamebox" tabindex="0" class="flex justify-center">
             <aside class="flex flex-col m-5 justify-between">
                 <dl class="mb-[150px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
