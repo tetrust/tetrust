@@ -167,6 +167,7 @@ impl GameManager {
 
                 wasm_bind::render_hold(game_info.hold.map(|e| e.block.into()), 120, 120, 6, 6);
 
+                write_text("time", format!("{:.2}", game_info.running_time as f64 / 1000.0f64));
                 write_text("score", game_info.record.score.to_string());
                 write_text("pc", game_info.record.perfect_clear.to_string());
                 write_text("quad", game_info.record.quad.to_string());
