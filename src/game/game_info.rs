@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 
 use instant::Instant;
+use js_sys::Date;
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -24,6 +25,7 @@ pub enum GameState {
 pub struct GameInfo {
     pub record: GameRecord,
 
+    pub start_time: Date,
     pub running_time: u128, // 실행시간 (밀리초)
 
     pub game_state: GameState,                     //게임 진행중 여부
@@ -120,6 +122,7 @@ impl GameInfo {
             das: 300,
             sdf: 0, //미사용
             arr: 0, //미사용
+            start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
             on_left_move: None,
