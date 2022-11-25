@@ -1,5 +1,6 @@
 use futures_util::stream::StreamExt;
 use gloo_timers::future::IntervalStream;
+use js_sys::Date;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -64,6 +65,7 @@ impl GameManager {
         }
 
         self.game_info.borrow_mut().game_state = GameState::PLAYING;
+        self.game_info.borrow_mut().start_time.set_time(Date::now());
         self.game_info.borrow_mut().lose = false;
 
         log::info!("GAME START");
@@ -87,7 +89,11 @@ impl GameManager {
                     }
                     former_lock_delay_count = game_info.lock_delay_count;
                 }
-                game_info.running_time += TICK_LOOP_INTERVAL as u128;
+
+                game_info.running_time = {
+                    let elapsed_time = Date::now() - game_info.start_time.get_time();
+                    elapsed_time as u128
+                };
 
                 let duration = start_point.elapsed();
 
