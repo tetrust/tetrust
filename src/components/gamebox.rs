@@ -24,7 +24,7 @@ pub fn game_box() -> Html {
         let _start_disabled = _start_disabled;
 
         Callback::from(move |_| {
-            if !game_manager.on_play() {
+            if !game_manager.playing() {
                 //start_disabled.set(true);
                 game_manager.start_game();
             }
