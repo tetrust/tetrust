@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 
 use instant::Instant;
 use js_sys::Date;
+use js_sys::Math::{random, floor};
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -353,6 +354,11 @@ impl GameInfo {
                 }
             }
             None => {
+                /* NOTE: fill dummies for testing */
+                let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+                let height = floor(random() * 3 as f64) as usize;
+
+                self.add_garbage_line(hole_loc, height);
                 let block = self.get_block();
                 self.current_block = Some(block);
 
