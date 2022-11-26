@@ -2,7 +2,7 @@ use wasm_bindgen::JsCast;
 
 use super::document::document;
 
-pub(crate) fn focus(id: &str) {
+pub(crate) fn _focus(id: &str) {
     let element = document()
         .get_element_by_id(id)
         .unwrap()
