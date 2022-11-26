@@ -64,6 +64,9 @@ impl GameManager {
             return None
         }
 
+        /* FIXME? */
+        self.game_info.borrow_mut().init_board()?;
+
         self.game_info.borrow_mut().game_state = GameState::PLAYING;
         self.game_info.borrow_mut().start_time.set_time(Date::now());
         self.game_info.borrow_mut().lose = false;

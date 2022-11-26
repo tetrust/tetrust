@@ -643,7 +643,6 @@ impl GameInfo {
         self.lose = true;
         self.current_block = None;
         write_text("message", "Game Over".into());
-        self.init_board();
     }
 
     // 보드 초기화
