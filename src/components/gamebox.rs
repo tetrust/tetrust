@@ -147,6 +147,10 @@ pub fn game_box() -> Html {
 
                 <div class="flex flex-col justify-between mb-[30px]">
                     <dl class="flex flex-row justify-between">
+                        <dt class="font-mono text-base	">{"Time"}</dt>
+                        <dd id="time" class="font-mono text-base">{"0.00"}</dd>
+                    </dl>
+                    <dl class="flex flex-row justify-between">
                         <dt class="font-mono text-base	">{"Score"}</dt>
                         <dd id="score">{"0"}</dd>
                     </dl>

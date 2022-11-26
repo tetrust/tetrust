@@ -1,6 +1,8 @@
 use std::collections::VecDeque;
 
 use instant::Instant;
+use js_sys::Date;
+use js_sys::Math::{random, floor};
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -24,6 +26,7 @@ pub enum GameState {
 pub struct GameInfo {
     pub record: GameRecord,
 
+    pub start_time: Date,
     pub running_time: u128, // 실행시간 (밀리초)
 
     pub game_state: GameState,                     //게임 진행중 여부
@@ -120,6 +123,7 @@ impl GameInfo {
             das: 300,
             sdf: 0, //미사용
             arr: 0, //미사용
+            start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
             on_left_move: None,
@@ -163,6 +167,24 @@ impl GameInfo {
         }
 
         Some(())
+    }
+
+    pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
+        let board_height = self.board.cells.len();
+
+        for row in 0..(board_height - height) {
+            self.board.cells[row] = self.board.cells[row + height].clone();
+        }
+
+        for row in 0..height {
+            for (i, cell) in self.board.cells[board_height - 1 - row].iter_mut().enumerate() {
+                *cell = if i == hole_loc {
+                    Cell::Empty
+                } else {
+                    Cell::Garbage
+                };
+            }
+        }
     }
 
     // 지울 줄이 있을 경우 줄을 지움
@@ -332,6 +354,11 @@ impl GameInfo {
                 }
             }
             None => {
+                /* NOTE: fill dummies for testing */
+                let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+                let height = floor(random() * 3 as f64) as usize;
+
+                self.add_garbage_line(hole_loc, height);
                 let block = self.get_block();
                 self.current_block = Some(block);
 
@@ -640,7 +667,6 @@ impl GameInfo {
         self.lose = true;
         self.current_block = None;
         write_text("message", "Game Over".into());
-        self.init_board();
     }
 
     // 보드 초기화
