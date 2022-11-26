@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 
 use instant::Instant;
 use js_sys::Date;
+use js_sys::Math::{random, floor};
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -166,6 +167,24 @@ impl GameInfo {
         }
 
         Some(())
+    }
+
+    pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
+        let board_height = self.board.cells.len();
+
+        for row in 0..(board_height - height) {
+            self.board.cells[row] = self.board.cells[row + height].clone();
+        }
+
+        for row in 0..height {
+            for (i, cell) in self.board.cells[board_height - 1 - row].iter_mut().enumerate() {
+                *cell = if i == hole_loc {
+                    Cell::Empty
+                } else {
+                    Cell::Garbage
+                };
+            }
+        }
     }
 
     // 지울 줄이 있을 경우 줄을 지움
@@ -335,6 +354,11 @@ impl GameInfo {
                 }
             }
             None => {
+                /* NOTE: fill dummies for testing */
+                let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+                let height = floor(random() * 3 as f64) as usize;
+
+                self.add_garbage_line(hole_loc, height);
                 let block = self.get_block();
                 self.current_block = Some(block);
 
@@ -643,7 +667,6 @@ impl GameInfo {
         self.lose = true;
         self.current_block = None;
         write_text("message", "Game Over".into());
-        self.init_board();
     }
 
     // 보드 초기화
