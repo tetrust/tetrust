@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 pub enum Cell {
     Empty = "white",
     Ghost = "#d3d3d3",
+    Garbage = "#424242",
     Red = "red",
     Green = "green",
     Blue = "blue",
@@ -36,6 +37,7 @@ impl std::convert::TryFrom<i32> for Cell {
             6 => Ok(Cell::Orange),
             7 => Ok(Cell::Yellow),
             8 => Ok(Cell::Ghost),
+            9 => Ok(Cell::Garbage),
             _ => Err(()),
         }
     }
@@ -57,6 +59,7 @@ impl Cell {
             Self::Orange => 6,
             Self::Yellow => 7,
             Self::Ghost => 8,
+            Self::Garbage => 9,
             _ => 0,
         }
     }
@@ -72,6 +75,7 @@ impl Cell {
             Self::Orange =>  "#e35c33",
             Self::Yellow =>  "#dc9f09",
             Self::Ghost => "#6d6d6d",
+            Self::Garbage => "#424242",
             _ => "white",
         }
     }

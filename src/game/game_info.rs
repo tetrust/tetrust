@@ -168,6 +168,24 @@ impl GameInfo {
         Some(())
     }
 
+    pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
+        let board_height = self.board.cells.len();
+
+        for row in 0..(board_height - height) {
+            self.board.cells[row] = self.board.cells[row + height].clone();
+        }
+
+        for row in 0..height {
+            for (i, cell) in self.board.cells[board_height - 1 - row].iter_mut().enumerate() {
+                *cell = if i == hole_loc {
+                    Cell::Empty
+                } else {
+                    Cell::Garbage
+                };
+            }
+        }
+    }
+
     // 지울 줄이 있을 경우 줄을 지움
     fn clear_line(&mut self) -> ClearInfo {
         let mut line = 0;
