@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+
 use gloo_timers::callback::Timeout;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
@@ -7,6 +8,8 @@ use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
 use crate::constants::keycode;
 use crate::game::manager::GameManager;
 use crate::js_bind::focus::focus;
+use crate::components::scorebox;
+
 
 #[function_component(GameBox)]
 pub fn game_box() -> Html {
@@ -70,6 +73,9 @@ pub fn game_box() -> Html {
     let game_info = Rc::clone(&_game_info);
 
     let onkeypress = Callback::from(move |event: KeyboardEvent| {
+     let time_count = time_count.clone();
+        time_count.set(*time_count + 1);
+        
         match event.key_code() {
             keycode::LEFT => {
                 game_info.borrow_mut().left_move();
@@ -131,7 +137,7 @@ pub fn game_box() -> Html {
     );
 
     html! {
-        <article id="gamebox" tabindex="0" class="flex justify-center" {onkeydown} {onkeypress}>
+        <article id="gamebox" tabindex="0" class="flex justify-center" {onkeydown} {onkeypress} >
             <aside class="flex flex-col m-5 justify-between">
                 <dl class="mb-[150px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
@@ -142,22 +148,17 @@ pub fn game_box() -> Html {
                     <dt id="combo" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="back2back" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="message" class="font-mono text-base text-center">{" "}</dt>
-                </dl>
+                    </dl>
 
-                <div class="flex flex-col justify-between mb-[30px]">
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	">{"Score"}</dt>
-                        <dd id="score">{"0"}</dd>
-                    </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	content-start">{"Quad"}</dt>
-                        <dd id="quad">{"0"}</dd>
-                    </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	">{"PC"}</dt>
-                        <dd id="pc">{"0"}</dd>
-                    </dl>
-                </div>
+                // <div class="flex flex-col justify-between mb-[30px]">
+                //     <dl class="flex flex-row justify-between">
+                //         <dt class="font-mono text-base	">{"Score"}</dt>
+                //         <dd id="score">{"0"}</dd>
+                //     </dl>
+              
+                //     </dl>
+                // </div>
+                <scorebox::ScoreBox/>
 
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick={onclick} disabled={*start_disabled}>{"Start"}</button>
             </aside>
