@@ -22,6 +22,12 @@ pub enum GameState {
     GAMEOVER,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum GameMode {
+    NORMAL,
+    SPRINT,
+}
+
 #[derive(Debug)]
 pub struct GameInfo {
     pub record: GameRecord,
@@ -29,7 +35,8 @@ pub struct GameInfo {
     pub start_time: Date,
     pub running_time: u128, // 실행시간 (밀리초)
 
-    pub game_state: GameState,                     //게임 진행중 여부
+    pub game_mode: GameMode,               //게임 모드
+    pub game_state: GameState,             //게임 진행중 여부
     pub current_position: Point,           //현재 블럭 좌표
     pub current_block: Option<BlockShape>, //현재 블럭 형태
 
@@ -109,6 +116,7 @@ impl GameInfo {
             next_count: 5,
             bag: VecDeque::new(),
             board,
+            game_mode: GameMode::NORMAL,
             game_state: GameState::IDLE,
             lose: false,
             bag_mode,
