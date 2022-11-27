@@ -1,12 +1,14 @@
 use std::rc::Rc;
 
 use gloo_timers::callback::Timeout;
+use log::info;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
 
 use crate::constants::keycode;
+use crate::game::{GameState, GameMode};
 use crate::game::manager::GameManager;
 use crate::js_bind::document::document;
 
@@ -14,6 +16,8 @@ use crate::js_bind::document::document;
 pub fn game_box() -> Html {
     let game_manager = GameManager::new();
     let _game_info = Rc::clone(&game_manager.game_info);
+    let game_info1 = Rc::clone(&game_manager.game_info);
+    let game_info2 = Rc::clone(&game_manager.game_info);
 
     let das = _game_info.borrow().das.clone();
 
@@ -27,6 +31,26 @@ pub fn game_box() -> Html {
             if !game_manager.playing() {
                 //start_disabled.set(true);
                 game_manager.start_game();
+            }
+        })
+    };
+
+    let to_normal_mode= {
+        Callback::from(move |_| {
+            let mut game_info = game_info1.borrow_mut();
+            if game_info.game_state != GameState::PLAYING {
+                info!("Switching to normal mode");
+                game_info.game_mode = GameMode::NORMAL;
+            }
+        })
+    };
+
+    let to_sprint_mode = {
+        Callback::from(move |_| {
+            let mut game_info = game_info2.borrow_mut();
+            if game_info.game_state != GameState::PLAYING {
+                info!("Switching to sprint mode");
+                game_info.game_mode = GameMode::SPRINT;
             }
         })
     };
@@ -169,12 +193,14 @@ pub fn game_box() -> Html {
                 <div>
                     <input
                         type="radio" id="normal" name="mode" checked=true
+                        onclick={to_normal_mode}
                     />
                     <label for="normal">{"Normal"}</label>
                 </div>
                 <div>
                     <input
                         type="radio" id="sprint" name="mode"
+                        onclick={to_sprint_mode}
                     />
                     <label for="normal">{"Sprint"}</label>
                 </div>
