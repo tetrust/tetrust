@@ -202,7 +202,7 @@ pub fn game_box() -> Html {
                         type="radio" id="sprint" name="mode"
                         onclick={to_sprint_mode}
                     />
-                    <label for="normal">{"Sprint"}</label>
+                    <label for="normal">{"Sprint(40 Lines)"}</label>
                 </div>
             </aside>
 
