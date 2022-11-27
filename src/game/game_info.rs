@@ -381,6 +381,14 @@ impl GameInfo {
                 }
             }
         }
+
+        // Handle 40-line sprint finish condition
+        // FIXME: Parametrizaiton (i.e., instead of hard-coding 40)
+        // FIXME: Recude delay. Maybe we can check # erased lines in clear_line
+        if self.game_mode == GameMode::SPRINT && self.record.line > 40 {
+            /* FIXME: call something like `clear` instead of `game_over` */
+            self.game_over();
+        }
     }
 
     // 왼쪽 이동
