@@ -220,6 +220,8 @@ impl GameInfo {
         let is_perfect = self.board.unfold().iter().all(|e| e == &0);
 
         if line > 0 {
+            self.record.line += line as u32;
+
             let mut is_back2back = false;
 
             match self.combo {
