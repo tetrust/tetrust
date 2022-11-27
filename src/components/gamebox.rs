@@ -165,6 +165,19 @@ pub fn game_box() -> Html {
                 </div>
 
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick={onclick} disabled={*start_disabled}>{"Start"}</button>
+
+                <div>
+                    <input
+                        type="radio" id="normal" name="mode" checked=true
+                    />
+                    <label for="normal">{"Normal"}</label>
+                </div>
+                <div>
+                    <input
+                        type="radio" id="sprint" name="mode"
+                    />
+                    <label for="normal">{"Sprint"}</label>
+                </div>
             </aside>
 
             <section class="my-5">
