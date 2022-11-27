@@ -364,11 +364,11 @@ impl GameInfo {
                 }
             }
             None => {
-                /* NOTE: fill dummies for testing */
+                /* NOTE: fill dummies for testing 
                 let hole_loc = floor(random() * self.board.column_count as f64) as usize;
                 let height = floor(random() * 3 as f64) as usize;
+                self.add_garbage_line(hole_loc, height); */
 
-                self.add_garbage_line(hole_loc, height);
                 let block = self.get_block();
                 self.current_block = Some(block);
 
