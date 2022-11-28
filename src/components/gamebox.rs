@@ -175,6 +175,10 @@ pub fn game_box() -> Html {
                         <dd id="time" class="font-mono text-base">{"0.00"}</dd>
                     </dl>
                     <dl class="flex flex-row justify-between">
+                        <dt class="font-mono text-base	">{"Lines"}</dt>
+                        <dd id="lineclearcount" class="font-mono text-base">{"0"}</dd>
+                    </dl>
+                    <dl class="flex flex-row justify-between">
                         <dt class="font-mono text-base	">{"Score"}</dt>
                         <dd id="score">{"0"}</dd>
                     </dl>
