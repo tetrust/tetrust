@@ -220,7 +220,7 @@ impl GameInfo {
         let is_perfect = self.board.unfold().iter().all(|e| e == &0);
 
         if line > 0 {
-            self.record.line += line as u32;
+            self.record.line_clear_count += line as u32;
 
             let mut is_back2back = false;
 
@@ -247,7 +247,7 @@ impl GameInfo {
                         }
                         4 => {
                             self.message = Some("Quad".into());
-                            self.record.quad += 1;
+                            self.record.quad_count += 1;
                             is_back2back = true
                         }
                         _ => {}
@@ -294,7 +294,7 @@ impl GameInfo {
             }
 
             if is_perfect {
-                self.record.perfect_clear += 1;
+                self.record.perfect_clear_count += 1;
                 self.message = Some("Perfect Clear".into())
             }
         } else {
@@ -335,6 +335,7 @@ impl GameInfo {
     // clear 처리 후에 트리거 (줄이 지워지는지 여부와 별개)
     fn after_clear(&mut self) {
         self.in_spin = SpinType::None;
+        write_text("lineclearcount", format!("{}", self.record.line_clear_count));
     }
 
     // 한칸 내려간 후에 트리거
@@ -365,7 +366,7 @@ impl GameInfo {
             }
             None => {
                 //NOTE: fill dummies for testing 
-                if (random()>0.5 && self.game_mode == GameMode::NORMAL){
+                if random()>0.5 && self.game_mode == GameMode::NORMAL{
                     let hole_loc = floor(random() * self.board.column_count as f64) as usize;
                     let height = floor(random() * 3 as f64) as usize;
                         self.add_garbage_line(hole_loc, height); 
@@ -387,7 +388,7 @@ impl GameInfo {
         // Handle 40-line sprint finish condition
         // FIXME: Parametrizaiton (i.e., instead of hard-coding 40)
         // FIXME: Recude delay. Maybe we can check # erased lines in clear_line
-        if self.game_mode == GameMode::SPRINT && self.record.line > 40 {
+        if self.game_mode == GameMode::SPRINT && self.record.line_clear_count > 40 {
             /* FIXME: call something like `clear` instead of `game_over` */
             self.game_over();
         }

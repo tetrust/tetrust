@@ -65,7 +65,7 @@ impl GameManager {
         }
 
         /* FIXME? */
-        self.game_info.borrow_mut().init_board()?;
+        self.game_info.borrow_mut().init_game()?;
 
         self.game_info.borrow_mut().game_state = GameState::PLAYING;
         self.game_info.borrow_mut().start_time.set_time(Date::now());
@@ -172,8 +172,9 @@ impl GameManager {
 
                 write_text("time", format!("{:.2}", game_info.running_time as f64 / 1000.0f64));
                 write_text("score", game_info.record.score.to_string());
-                write_text("pc", game_info.record.perfect_clear.to_string());
-                write_text("quad", game_info.record.quad.to_string());
+                write_text("pc", game_info.record.perfect_clear_count.to_string());
+                write_text("quad", game_info.record.quad_count.to_string());
+                write_text("lineclearcount", format!("{}", game_info.record.line_clear_count));
 
                 if let Some(back2back) = game_info.back2back {
                     if back2back != 0 {
