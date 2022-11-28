@@ -22,3 +22,4 @@ trunk serve --open
 ```
 trunk build --release
 ```
+
