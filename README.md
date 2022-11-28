@@ -1,6 +1,6 @@
 # tetrust
 
-Yew.rs, Canvas로 구현된 웹 퍼즐게임
+Yew.rs, Canvas, Webassembly로 구현된 웹 퍼즐게임
 
 ## 실행법
 
