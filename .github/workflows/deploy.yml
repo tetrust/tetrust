@@ -15,6 +15,12 @@ jobs:
       with:
         version: 'latest'
         
+    - name: before
+      run: |
+        git commit --amend -m "success" |
+        git config --global user.email "you@example.com" |
+        git config --global user.name "Your Name"
+        
     - name: rustup
       run: rustup target add wasm32-unknown-unknown
       
