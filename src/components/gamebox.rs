@@ -60,58 +60,74 @@ pub fn game_box() -> Html {
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                game_info.borrow_mut().on_right_move = None;
-                game_info.borrow_mut().left_move();
+                if(!event.repeat()){
+                    game_info.borrow_mut().on_right_move = None;
+                    game_info.borrow_mut().left_move();
 
-                let _game_info = Rc::clone(&game_info);
-                let game_info = Rc::clone(&_game_info);
+                    let _game_info = Rc::clone(&game_info);
+                    let game_info = Rc::clone(&_game_info);
 
-                Timeout::new(das, move || {
-                    if game_info.borrow().on_left_move.is_some() {
-                        game_info.borrow_mut().left_move_end();
-                    }
-                })
-                .forget();
+                    Timeout::new(das, move || {
+                        if game_info.borrow().on_left_move.is_some() {
+                            game_info.borrow_mut().left_move_end();
+                        }
+                    })
+                    .forget();
 
-                let game_info = Rc::clone(&_game_info);
+                    let game_info = Rc::clone(&_game_info);
 
-                game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
+                    game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
+                }
             } // left move
             keycode::RIGHT => {
-                game_info.borrow_mut().on_right_move = None;
-                game_info.borrow_mut().right_move();
+                if(!event.repeat()){
+                    game_info.borrow_mut().on_right_move = None;
+                    game_info.borrow_mut().right_move();
 
-                let _game_info = Rc::clone(&game_info);
-                let game_info = Rc::clone(&_game_info);
+                    let _game_info = Rc::clone(&game_info);
+                    let game_info = Rc::clone(&_game_info);
 
-                Timeout::new(das, move || {
-                    if game_info.borrow().on_right_move.is_some() {
-                        game_info.borrow_mut().right_move_end();
-                    }
-                })
-                .forget();
+                    Timeout::new(das, move || {
+                        if game_info.borrow().on_right_move.is_some() {
+                            game_info.borrow_mut().right_move_end();
+                        }
+                    })
+                    .forget();
 
-                let game_info = Rc::clone(&_game_info);
+                    let game_info = Rc::clone(&_game_info);
 
-                game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
+                    game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
+                }
             } // right move
             keycode::DOWN => {
-                game_info.borrow_mut().soft_drop();
+                if(!event.repeat()){
+                    game_info.borrow_mut().soft_drop();
+                }
             } // down move
             keycode::Z => {
-                game_info.borrow_mut().left_rotate();
+                if(!event.repeat()){
+                    game_info.borrow_mut().left_rotate();
+                }
             } // z
             keycode::X => {
-                game_info.borrow_mut().right_rotate();
+                if(!event.repeat()){
+                    game_info.borrow_mut().right_rotate();
+                }
             } // x
             keycode::A => {
+                if(!event.repeat()){
                 game_info.borrow_mut().double_rotate();
+                }
             } // a
             keycode::SPACE => {
-                game_info.borrow_mut().hard_drop();
+                if(!event.repeat()){
+                    game_info.borrow_mut().hard_drop();
+                }
             } // spacebar
             keycode::SHIFT => {
+                if(!event.repeat()){
                 game_info.borrow_mut().hold();
+                }
             } // shift
             _ => {}
         }

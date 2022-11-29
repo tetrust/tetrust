@@ -67,9 +67,9 @@ pub struct GameInfo {
     pub lock_delay: u32,      // 바닥에 닿을때 고정하기까지의 딜레이. 밀리초 단위.
     pub lock_delay_count: u8, // 하좌우이동, 좌우회전 성공 시 록딜레이 카운트가 올라감. 틱스레드에서 변화를 읽고 start를 초기화. 8이상이면 안올라감
 
-    pub sdf: u32, // soft drop fast. 소프트 드랍 속도
-    pub das: u32, // delay auto shift. 밀리초 단위.
-    pub arr: u32, // auto repeat shift. 좌우 이동 클릭시,
+    pub sdf: u32, // SDF: Soft Drop Factor. 소프트 드랍 Key가 눌러졌을 때 자연드랍속도를 몇배 더 빠르게할지 설정
+    pub das: u32, // DAS: Delayed Auto Shift의 약자. Key를 Holding하여 Auto Shift가 시작되기까지의 시간, ms단위
+    pub arr: u32, // ARR: Auto Repeat Rate: Auto Shift가 활성화되었을 때 이동이 반복되는 사이클타임, ms단위
 
     pub on_left_move: Option<Instant>,  // left move 클릭한 시작시간
     pub on_right_move: Option<Instant>, // right move 클릭한 시작시간
@@ -128,9 +128,9 @@ impl GameInfo {
             message: None,
             in_spin: SpinType::None,
             lock_delay: 500,
-            das: 300,
-            sdf: 0, //미사용
-            arr: 0, //미사용
+            das: 300, // 좌우 DAS DEFAULT VALUE
+            sdf: 0, //FIXME: 미사용
+            arr: 0, //FIXME: 미사용
             start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
