@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use instant::Instant;
 use js_sys::Date;
-use js_sys::Math::{random, floor};
+use js_sys::Math::{floor, random};
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -43,15 +43,15 @@ pub struct GameInfo {
     pub freezed: bool, //현재 블럭이 보드에 붙었는지?
     pub lose: bool,    //현재 게임 오버 여부
 
-    pub next_count: i32,           // 넥스트 개수
-    pub bag: VecDeque<BlockShape>, // 현재 가방
+    pub next_count: i32,             // 넥스트 개수
+    pub bag: VecDeque<BlockShape>,   // 현재 가방
     pub garbage_queue: VecDeque<u8>, // 쓰레기라인대기열
-    pub garbage_gauge_count: u64, // 쌓인 쓰레기줄 수, 새 block write 시점에 남아있으면 올라옴
+    pub garbage_gauge_count: u64,    // 쌓인 쓰레기줄 수, 새 block write 시점에 남아있으면 올라옴
 
     pub board: Board, // 보드
 
-    pub render_interval: u64, //렌더링 시간간격(밀리초)
-    pub gravity_drop_interval: u64,   //틱당 시간간격(밀리초)
+    pub render_interval: u64,       //렌더링 시간간격(밀리초)
+    pub gravity_drop_interval: u64, //틱당 시간간격(밀리초)
 
     pub bag_mode: BagType, //가방 순환 규칙 사용여부 (false면 완전 랜덤. true면 한 묶음에서 랜덤)
     pub block_list: Vec<BlockShape>, //블럭 리스트
@@ -124,7 +124,7 @@ impl GameInfo {
             lose: false,
             bag_mode,
             block_list,
-            garbage_gauge_count: 0, 
+            garbage_gauge_count: 0,
             hold: None,
             hold_used: false,
             back2back: None,
@@ -133,8 +133,8 @@ impl GameInfo {
             in_spin: SpinType::None,
             lock_delay: 500,
             das: 300, // 좌우 DAS DEFAULT VALUE
-            sdf: 5, //FIXME: 미사용
-            arr: 0, //FIXME: 미사용
+            sdf: 5,   //FIXME: 미사용
+            arr: 0,   //FIXME: 미사용
             start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
@@ -181,19 +181,6 @@ impl GameInfo {
         Some(())
     }
 
-    pub fn trigger_garbage_line(&mut self){
-        let mut until = true;
-        while until && self.garbage_gauge_count>0 {
-                let current_pop = self.garbage_queue.pop_front().unwrap();
-                if current_pop>0 {
-                    self.add_garbage_line((current_pop-1 as u8) as usize)
-                }
-                else {
-                    until = false;
-                }
-            }
-    }
-
     pub fn add_garbage_line(&mut self, hole_loc: usize) {
         let board_height = self.board.cells.len();
 
@@ -208,6 +195,17 @@ impl GameInfo {
             } else {
                 Cell::Garbage
             };
+        }
+    }
+
+    pub fn trigger_garbage_line(&mut self) {
+        while self.garbage_gauge_count > 0 {
+            let current_pop = self.garbage_queue.pop_front().unwrap();
+            if current_pop > 0 {
+                self.add_garbage_line((current_pop - 1 as u8) as usize)
+            } else {
+                break;
+            }
         }
     }
 
@@ -346,23 +344,25 @@ impl GameInfo {
             self.lock_delay_count = 0;
             self.hold_used = false;
         }
-
     }
 
     // clear 처리 후에 트리거 (줄이 지워지는지 여부와 별개)
     fn after_clear(&mut self) {
         self.in_spin = SpinType::None;
-        write_text("lineclearcount", format!("{}", self.record.line_clear_count));
+        write_text(
+            "lineclearcount",
+            format!("{}", self.record.line_clear_count),
+        );
 
-        //NOTE: Garbage Line Queue 채우기 
-        if random()>0.5 && self.game_mode == GameMode::NORMAL{
+        //NOTE: Garbage Line Queue 채우기
+        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
             let hole_loc = floor(random() * self.board.column_count as f64) as usize;
             let height = floor(random() * 3 as f64) as usize;
-                for _i in 0..height {
-                    self.garbage_queue.push_back(hole_loc as u8 + 1 as u8);
-                    self.garbage_gauge_count += 1;
-                }
-                self.garbage_queue.push_back(0);
+            for _i in 0..height {
+                self.garbage_queue.push_back(hole_loc as u8 + 1 as u8);
+                self.garbage_gauge_count += 1;
+            }
+            self.garbage_queue.push_back(0);
         }
     }
 
@@ -393,7 +393,6 @@ impl GameInfo {
                 }
             }
             None => {
-
                 let block = self.get_block();
                 self.current_block = Some(block);
 
@@ -663,11 +662,8 @@ impl GameInfo {
         match position {
             Some(position) => {
                 self.current_position = position;
-
                 self.fix_current_block();
-
                 self.clear_line();
-
                 self.gravity_drop();
             }
             None => {}
@@ -754,6 +750,8 @@ impl GameInfo {
         self.current_block = None;
         self.hold_used = false;
         self.hold = None;
+        self.garbage_gauge_count = 0;
+        self.garbage_queue = VecDeque::new();
 
         Some(())
     }
