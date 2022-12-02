@@ -45,6 +45,8 @@ pub struct GameInfo {
 
     pub next_count: i32,           // 넥스트 개수
     pub bag: VecDeque<BlockShape>, // 현재 가방
+    pub garbage_queue: VecDeque<u8>, // 쓰레기라인대기열
+    pub garbage_gauge_count: u64, // 쌓인 쓰레기줄 수, 새 block write 시점에 남아있으면 올라옴
 
     pub board: Board, // 보드
 
@@ -56,7 +58,6 @@ pub struct GameInfo {
 
     pub hold: Option<BlockShape>, // 홀드한 블럭
     pub hold_used: bool,          // 현재 홀드 사용권을 소모했는지 여부
-    pub garbage_gauge_count: u64, // 쌓인 쓰레기줄 수, 새 block write 시점에 남아있으면 올라옴
 
     pub combo: Option<u32>, // 현재 콤보 (제로콤보는 None, 지웠을 경우 0부터 시작)
     pub back2back: Option<u32>, // 현재 백투백 스택 (제로는 None, 지웠을 경우 0부터 시작)
@@ -116,13 +117,14 @@ impl GameInfo {
             freezed: false,
             next_count: 5,
             bag: VecDeque::new(),
+            garbage_queue: VecDeque::new(),
             board,
             game_mode: GameMode::NORMAL,
             game_state: GameState::IDLE,
             lose: false,
             bag_mode,
             block_list,
-            garbage_gauge_count: 7, 
+            garbage_gauge_count: 0, 
             hold: None,
             hold_used: false,
             back2back: None,
@@ -179,22 +181,33 @@ impl GameInfo {
         Some(())
     }
 
-    pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
+    pub fn trigger_garbage_line(&mut self){
+        let mut until = true;
+        while until && self.garbage_gauge_count>0 {
+                let current_pop = self.garbage_queue.pop_front().unwrap();
+                if current_pop>0 {
+                    self.add_garbage_line((current_pop-1 as u8) as usize)
+                }
+                else {
+                    until = false;
+                }
+            }
+    }
+
+    pub fn add_garbage_line(&mut self, hole_loc: usize) {
         let board_height = self.board.cells.len();
 
-        self.garbage_gauge_count += height as u64;
-        for row in 0..(board_height - height) {
-            self.board.cells[row] = self.board.cells[row + height].clone();
+        self.garbage_gauge_count -= 1 as u64;
+        for row in 0..(board_height - 1) {
+            self.board.cells[row] = self.board.cells[row + 1].clone();
         }
 
-        for row in 0..height {
-            for (i, cell) in self.board.cells[board_height - 1 - row].iter_mut().enumerate() {
-                *cell = if i == hole_loc {
-                    Cell::Empty
-                } else {
-                    Cell::Garbage
-                };
-            }
+        for (i, cell) in self.board.cells[board_height - 1].iter_mut().enumerate() {
+            *cell = if i == hole_loc {
+                Cell::Empty
+            } else {
+                Cell::Garbage
+            };
         }
     }
 
@@ -302,6 +315,7 @@ impl GameInfo {
             }
         } else {
             self.combo = None;
+            self.trigger_garbage_line();
         }
 
         let score = calculate_score(
@@ -330,15 +344,26 @@ impl GameInfo {
                 .write_current_block(current_block.cells, self.current_position);
             self.current_block = None;
             self.lock_delay_count = 0;
-
             self.hold_used = false;
         }
+
     }
 
     // clear 처리 후에 트리거 (줄이 지워지는지 여부와 별개)
     fn after_clear(&mut self) {
         self.in_spin = SpinType::None;
         write_text("lineclearcount", format!("{}", self.record.line_clear_count));
+
+        //NOTE: Garbage Line Queue 채우기 
+        if random()>0.5 && self.game_mode == GameMode::NORMAL{
+            let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+            let height = floor(random() * 3 as f64) as usize;
+                for _i in 0..height {
+                    self.garbage_queue.push_back(hole_loc as u8 + 1 as u8);
+                    self.garbage_gauge_count += 1;
+                }
+                self.garbage_queue.push_back(0);
+        }
     }
 
     // 한칸 내려간 후에 트리거
@@ -368,12 +393,6 @@ impl GameInfo {
                 }
             }
             None => {
-                //NOTE: fill dummies for testing 
-                if random()>0.5 && self.game_mode == GameMode::NORMAL{
-                    let hole_loc = floor(random() * self.board.column_count as f64) as usize;
-                    let height = floor(random() * 3 as f64) as usize;
-                        self.add_garbage_line(hole_loc, height); 
-                }
 
                 let block = self.get_block();
                 self.current_block = Some(block);
