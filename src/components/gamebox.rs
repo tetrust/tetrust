@@ -5,7 +5,6 @@ use log::info;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
-use js_sys::Date;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
 
 use crate::constants::keycode;
@@ -181,7 +180,6 @@ pub fn game_box() -> Html {
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
                     <dd><canvas id="hold-canvas" class="" width="120" height="120"></canvas></dd>
                 </dl>
-
                 <dl class="flex flex-col justify-between mb-[80px]">
                     <dt id="combo" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="back2back" class="font-mono text-base text-center">{" "}</dt>
@@ -228,6 +226,9 @@ pub fn game_box() -> Html {
                     <label for="normal">{"Sprint(40 Lines)"}</label>
                 </div>
             </aside>
+            <dl class="mt-[20px] mr-[10px] side-canvas">
+                <dd><canvas id="garbage-gauge-canvas" class="" width="30" height="600"></canvas></dd>
+            </dl>
 
             <section class="my-5">
                 <canvas id="game-canvas" width="300" height="600"></canvas>

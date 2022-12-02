@@ -56,6 +56,7 @@ pub struct GameInfo {
 
     pub hold: Option<BlockShape>, // 홀드한 블럭
     pub hold_used: bool,          // 현재 홀드 사용권을 소모했는지 여부
+    pub garbage_gauge_count: u64, // 쌓인 쓰레기줄 수, 새 block write 시점에 남아있으면 올라옴
 
     pub combo: Option<u32>, // 현재 콤보 (제로콤보는 None, 지웠을 경우 0부터 시작)
     pub back2back: Option<u32>, // 현재 백투백 스택 (제로는 None, 지웠을 경우 0부터 시작)
@@ -121,6 +122,7 @@ impl GameInfo {
             lose: false,
             bag_mode,
             block_list,
+            garbage_gauge_count: 7, 
             hold: None,
             hold_used: false,
             back2back: None,
@@ -180,6 +182,7 @@ impl GameInfo {
     pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
         let board_height = self.board.cells.len();
 
+        self.garbage_gauge_count += height as u64;
         for row in 0..(board_height - height) {
             self.board.cells[row] = self.board.cells[row + height].clone();
         }
