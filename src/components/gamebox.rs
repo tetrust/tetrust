@@ -5,6 +5,7 @@ use log::info;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
+use js_sys::Date;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
 
 use crate::constants::keycode;
@@ -60,7 +61,7 @@ pub fn game_box() -> Html {
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                if(!event.repeat()){
+                if !event.repeat(){
                     game_info.borrow_mut().on_right_move = None;
                     game_info.borrow_mut().left_move();
 
@@ -80,7 +81,7 @@ pub fn game_box() -> Html {
                 }
             } // left move
             keycode::RIGHT => {
-                if(!event.repeat()){
+                if !event.repeat(){
                     game_info.borrow_mut().on_right_move = None;
                     game_info.borrow_mut().right_move();
 
@@ -100,32 +101,33 @@ pub fn game_box() -> Html {
                 }
             } // right move
             keycode::DOWN => {
-                if(!event.repeat()){
+                if !event.repeat(){
                     game_info.borrow_mut().soft_drop();
+                    game_info.borrow_mut().gravity_drop_interval = 29;
                 }
             } // down move
             keycode::Z => {
-                if(!event.repeat()){
+                if !event.repeat(){
                     game_info.borrow_mut().left_rotate();
                 }
             } // z
             keycode::X => {
-                if(!event.repeat()){
+                if !event.repeat(){
                     game_info.borrow_mut().right_rotate();
                 }
             } // x
             keycode::A => {
-                if(!event.repeat()){
+                if !event.repeat(){
                 game_info.borrow_mut().double_rotate();
                 }
             } // a
             keycode::SPACE => {
-                if(!event.repeat()){
+                if !event.repeat(){
                     game_info.borrow_mut().hard_drop();
                 }
             } // spacebar
             keycode::SHIFT => {
-                if(!event.repeat()){
+                if !event.repeat(){
                 game_info.borrow_mut().hold();
                 }
             } // shift
@@ -151,6 +153,7 @@ pub fn game_box() -> Html {
             } // right move
             keycode::DOWN => {
                 game_info.borrow_mut().on_down_move = None;
+                game_info.borrow_mut().gravity_drop_interval = 500;
             } // down move
             _ => {}
         }

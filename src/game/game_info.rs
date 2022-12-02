@@ -49,7 +49,7 @@ pub struct GameInfo {
     pub board: Board, // 보드
 
     pub render_interval: u64, //렌더링 시간간격(밀리초)
-    pub tick_interval: u64,   //틱당 시간간격(밀리초)
+    pub gravity_drop_interval: u64,   //틱당 시간간격(밀리초)
 
     pub bag_mode: BagType, //가방 순환 규칙 사용여부 (false면 완전 랜덤. true면 한 묶음에서 랜덤)
     pub block_list: Vec<BlockShape>, //블럭 리스트
@@ -109,7 +109,7 @@ impl GameInfo {
         Self {
             record: Default::default(),
             render_interval: 200,
-            tick_interval: 1000,
+            gravity_drop_interval: 1000,
             current_position: Default::default(),
             current_block: None,
             freezed: false,
@@ -129,7 +129,7 @@ impl GameInfo {
             in_spin: SpinType::None,
             lock_delay: 500,
             das: 300, // 좌우 DAS DEFAULT VALUE
-            sdf: 0, //FIXME: 미사용
+            sdf: 5, //FIXME: 미사용
             arr: 0, //FIXME: 미사용
             start_time: Date::new_0(),
             running_time: 0,
@@ -344,7 +344,7 @@ impl GameInfo {
     }
 
     // 한칸씩 아래로 내려가는 중력 동작
-    pub fn tick(&mut self) {
+    pub fn gravity_drop(&mut self) {
         if self.game_state != GameState::PLAYING {
             return;
         }
@@ -610,7 +610,7 @@ impl GameInfo {
 
     // 소프트드랍
     pub fn soft_drop(&mut self) {
-        self.tick();
+        self.gravity_drop();
     }
 
     // 하드드랍될 위치 획득
@@ -646,7 +646,7 @@ impl GameInfo {
 
                 self.clear_line();
 
-                self.tick();
+                self.gravity_drop();
             }
             None => {}
         }
@@ -672,7 +672,7 @@ impl GameInfo {
 
             self.hold_used = true;
 
-            self.tick();
+            self.gravity_drop();
         }
     }
 
