@@ -111,7 +111,7 @@ impl GameInfo {
         Self {
             record: Default::default(),
             render_interval: 200,
-            tick_interval: 1000,
+            gravity_drop_interval: 1000,
             current_position: Default::default(),
             current_block: None,
             freezed: false,
