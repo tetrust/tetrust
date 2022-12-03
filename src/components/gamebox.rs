@@ -138,6 +138,8 @@ pub fn game_box() -> Html {
         .add_event_listener_with_callback("keydown", keydown.as_ref().unchecked_ref())
         .unwrap();
 
+    keydown.forget();
+
     // let onkeypress = Callback::from(move |event: KeyboardEvent| {
     //     match event.key_code() {
     //         keycode::LEFT => {
