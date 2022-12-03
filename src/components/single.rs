@@ -1,6 +1,6 @@
 use crate::components::gamebox;
 
-use yew::{function_component, html};
+use yew::{function_component, html, Html};
 
 #[function_component(SinglePlay)]
 pub fn single() -> Html {

@@ -5,11 +5,12 @@ use log::info;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
-use yew::{function_component, html, use_effect_with_deps, use_state, Callback};
+use yew::{function_component, html, use_effect_with_deps, use_state, Callback, Html};
 
+use crate::components::scorebox::ScoreBox;
 use crate::constants::keycode;
-use crate::game::{GameState, GameMode};
 use crate::game::manager::GameManager;
+use crate::game::{GameMode, GameState};
 use crate::js_bind::document::document;
 
 #[function_component(GameBox)]
@@ -27,7 +28,7 @@ pub fn game_box() -> Html {
     let onclick = {
         let _start_disabled = _start_disabled;
 
-        Callback::from(move |_| {
+        Callback::from(move |_: _| {
             if !game_manager.playing() {
                 //start_disabled.set(true);
                 game_manager.start_game();
@@ -35,8 +36,8 @@ pub fn game_box() -> Html {
         })
     };
 
-    let to_normal_mode= {
-        Callback::from(move |_| {
+    let to_normal_mode = {
+        Callback::from(move |_: _| {
             let mut game_info = game_info1.borrow_mut();
             if game_info.game_state != GameState::PLAYING {
                 info!("Switching to normal mode");
@@ -60,7 +61,7 @@ pub fn game_box() -> Html {
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                if(!event.repeat()){
+                if !event.repeat() {
                     game_info.borrow_mut().on_right_move = None;
                     game_info.borrow_mut().left_move();
 
@@ -80,7 +81,7 @@ pub fn game_box() -> Html {
                 }
             } // left move
             keycode::RIGHT => {
-                if(!event.repeat()){
+                if !event.repeat() {
                     game_info.borrow_mut().on_right_move = None;
                     game_info.borrow_mut().right_move();
 
@@ -100,33 +101,33 @@ pub fn game_box() -> Html {
                 }
             } // right move
             keycode::DOWN => {
-                if(!event.repeat()){
+                if !event.repeat() {
                     game_info.borrow_mut().soft_drop();
                 }
             } // down move
             keycode::Z => {
-                if(!event.repeat()){
+                if !event.repeat() {
                     game_info.borrow_mut().left_rotate();
                 }
             } // z
             keycode::X => {
-                if(!event.repeat()){
+                if !event.repeat() {
                     game_info.borrow_mut().right_rotate();
                 }
             } // x
             keycode::A => {
-                if(!event.repeat()){
-                game_info.borrow_mut().double_rotate();
+                if !event.repeat() {
+                    game_info.borrow_mut().double_rotate();
                 }
             } // a
             keycode::SPACE => {
-                if(!event.repeat()){
+                if !event.repeat() {
                     game_info.borrow_mut().hard_drop();
                 }
             } // spacebar
             keycode::SHIFT => {
-                if(!event.repeat()){
-                game_info.borrow_mut().hold();
+                if !event.repeat() {
+                    game_info.borrow_mut().hold();
                 }
             } // shift
             _ => {}
@@ -137,7 +138,40 @@ pub fn game_box() -> Html {
         .add_event_listener_with_callback("keydown", keydown.as_ref().unchecked_ref())
         .unwrap();
 
-    keydown.forget();
+    // let onkeypress = Callback::from(move |event: KeyboardEvent| {
+    //     match event.key_code() {
+    //         keycode::LEFT => {
+    //             game_info.borrow_mut().left_move();
+    //             game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
+
+    //             let game_info = Rc::clone(&game_info);
+
+    //             Timeout::new(das, move || {
+    //                 if game_info.borrow().on_left_move.is_some() {
+    //                     game_info.borrow_mut().left_move_end();
+    //                 }
+    //             })
+    //             .forget();
+    //         } // left move
+    //         keycode::RIGHT => {
+    //             game_info.borrow_mut().right_move();
+    //             game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
+
+    //             let game_info = Rc::clone(&game_info);
+
+    //             Timeout::new(das, move || {
+    //                 if game_info.borrow().on_right_move.is_some() {
+    //                     game_info.borrow_mut().right_move_end();
+    //                 }
+    //             })
+    //             .forget();
+    //         } // right move
+    //         keycode::DOWN => {
+    //             game_info.borrow_mut().soft_drop();
+    //         } // down move
+    //         _ => {}
+    //     }
+    // });
 
     let game_info = Rc::clone(&_game_info);
 
@@ -201,11 +235,17 @@ pub fn game_box() -> Html {
                         <dt class="font-mono text-base	content-start">{"Quad"}</dt>
                         <dd id="quad">{"0"}</dd>
                     </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	">{"PC"}</dt>
-                        <dd id="pc">{"0"}</dd>
-                    </dl>
                 </div>
+
+                 // <div class="flex flex-col justify-between mb-[30px]">
+                //     <dl class="flex flex-row justify-between">
+                //         <dt class="font-mono text-base	">{"Score"}</dt>
+                //         <dd id="score">{"0"}</dd>
+                //     </dl>
+
+                //     </dl>
+                // </div>
+                <ScoreBox/>
 
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick={onclick} disabled={*start_disabled}>{"Start"}</button>
 

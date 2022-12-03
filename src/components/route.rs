@@ -17,7 +17,7 @@ pub enum Route {
     NotFound,
 }
 
-pub fn switch(routes: &Route) -> Html {
+pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Redirect<Route> to={Route::SinglePlay}/> },
         Route::SinglePlay => html! { <SinglePlay/> },
