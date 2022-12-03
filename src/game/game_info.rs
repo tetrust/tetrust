@@ -1,6 +1,8 @@
 use std::collections::VecDeque;
 
 use instant::Instant;
+use js_sys::Date;
+use js_sys::Math::{random, floor};
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -13,13 +15,28 @@ use crate::util::{random, rotate_left, rotate_right, KICK_INDEX_3BY3, KICK_INDEX
 
 use super::{calculate_score, Block};
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum GameState {
+    IDLE,
+    PLAYING,
+    GAMEOVER,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum GameMode {
+    NORMAL,
+    SPRINT,
+}
+
 #[derive(Debug)]
 pub struct GameInfo {
     pub record: GameRecord,
 
+    pub start_time: Date,
     pub running_time: u128, // 실행시간 (밀리초)
 
-    pub on_play: bool,                     //게임 진행중 여부
+    pub game_mode: GameMode,               //게임 모드
+    pub game_state: GameState,             //게임 진행중 여부
     pub current_position: Point,           //현재 블럭 좌표
     pub current_block: Option<BlockShape>, //현재 블럭 형태
 
@@ -50,9 +67,9 @@ pub struct GameInfo {
     pub lock_delay: u32,      // 바닥에 닿을때 고정하기까지의 딜레이. 밀리초 단위.
     pub lock_delay_count: u8, // 하좌우이동, 좌우회전 성공 시 록딜레이 카운트가 올라감. 틱스레드에서 변화를 읽고 start를 초기화. 8이상이면 안올라감
 
-    pub sdf: u32, // soft drop fast. 소프트 드랍 속도
-    pub das: u32, // delay auto shift. 밀리초 단위.
-    pub arr: u32, // auto repeat shift. 좌우 이동 클릭시,
+    pub sdf: u32, // SDF: Soft Drop Factor. 소프트 드랍 Key가 눌러졌을 때 자연드랍속도를 몇배 더 빠르게할지 설정
+    pub das: u32, // DAS: Delayed Auto Shift의 약자. Key를 Holding하여 Auto Shift가 시작되기까지의 시간, ms단위
+    pub arr: u32, // ARR: Auto Repeat Rate: Auto Shift가 활성화되었을 때 이동이 반복되는 사이클타임, ms단위
 
     pub on_left_move: Option<Instant>,  // left move 클릭한 시작시간
     pub on_right_move: Option<Instant>, // right move 클릭한 시작시간
@@ -99,7 +116,8 @@ impl GameInfo {
             next_count: 5,
             bag: VecDeque::new(),
             board,
-            on_play: false,
+            game_mode: GameMode::NORMAL,
+            game_state: GameState::IDLE,
             lose: false,
             bag_mode,
             block_list,
@@ -110,9 +128,10 @@ impl GameInfo {
             message: None,
             in_spin: SpinType::None,
             lock_delay: 500,
-            das: 300,
-            sdf: 0, //미사용
-            arr: 0, //미사용
+            das: 300, // 좌우 DAS DEFAULT VALUE
+            sdf: 0, //FIXME: 미사용
+            arr: 0, //FIXME: 미사용
+            start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
             on_left_move: None,
@@ -158,6 +177,24 @@ impl GameInfo {
         Some(())
     }
 
+    pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
+        let board_height = self.board.cells.len();
+
+        for row in 0..(board_height - height) {
+            self.board.cells[row] = self.board.cells[row + height].clone();
+        }
+
+        for row in 0..height {
+            for (i, cell) in self.board.cells[board_height - 1 - row].iter_mut().enumerate() {
+                *cell = if i == hole_loc {
+                    Cell::Empty
+                } else {
+                    Cell::Garbage
+                };
+            }
+        }
+    }
+
     // 지울 줄이 있을 경우 줄을 지움
     fn clear_line(&mut self) -> ClearInfo {
         let mut line = 0;
@@ -183,6 +220,8 @@ impl GameInfo {
         let is_perfect = self.board.unfold().iter().all(|e| e == &0);
 
         if line > 0 {
+            self.record.line_clear_count += line as u32;
+
             let mut is_back2back = false;
 
             match self.combo {
@@ -208,7 +247,7 @@ impl GameInfo {
                         }
                         4 => {
                             self.message = Some("Quad".into());
-                            self.record.quad += 1;
+                            self.record.quad_count += 1;
                             is_back2back = true
                         }
                         _ => {}
@@ -255,7 +294,7 @@ impl GameInfo {
             }
 
             if is_perfect {
-                self.record.perfect_clear += 1;
+                self.record.perfect_clear_count += 1;
                 self.message = Some("Perfect Clear".into())
             }
         } else {
@@ -296,6 +335,7 @@ impl GameInfo {
     // clear 처리 후에 트리거 (줄이 지워지는지 여부와 별개)
     fn after_clear(&mut self) {
         self.in_spin = SpinType::None;
+        write_text("lineclearcount", format!("{}", self.record.line_clear_count));
     }
 
     // 한칸 내려간 후에 트리거
@@ -305,7 +345,7 @@ impl GameInfo {
 
     // 한칸씩 아래로 내려가는 중력 동작
     pub fn tick(&mut self) {
-        if !self.on_play {
+        if self.game_state != GameState::PLAYING {
             return;
         }
 
@@ -325,6 +365,13 @@ impl GameInfo {
                 }
             }
             None => {
+                //NOTE: fill dummies for testing 
+                if random()>0.5 && self.game_mode == GameMode::NORMAL{
+                    let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+                    let height = floor(random() * 3 as f64) as usize;
+                        self.add_garbage_line(hole_loc, height); 
+                }
+
                 let block = self.get_block();
                 self.current_block = Some(block);
 
@@ -336,6 +383,14 @@ impl GameInfo {
                     self.game_over();
                 }
             }
+        }
+
+        // Handle 40-line sprint finish condition
+        // FIXME: Parametrizaiton (i.e., instead of hard-coding 40)
+        // FIXME: Recude delay. Maybe we can check # erased lines in clear_line
+        if self.game_mode == GameMode::SPRINT && self.record.line_clear_count > 40 {
+            /* FIXME: call something like `clear` instead of `game_over` */
+            self.game_over();
         }
     }
 
@@ -629,7 +684,7 @@ impl GameInfo {
 
     // 게임오버
     fn game_over(&mut self) {
-        self.on_play = false;
+        self.game_state = GameState::GAMEOVER;
         self.lose = true;
         self.current_block = None;
         write_text("message", "Game Over".into());
