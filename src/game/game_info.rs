@@ -198,20 +198,102 @@ impl GameInfo {
         }
     }
 
-    pub fn trigger_garbage_line(&mut self) {
-        while self.garbage_gauge_count > 0 {
-            let current_pop = self.garbage_queue.pop_front().unwrap();
-            if current_pop > 0 {
-                self.add_garbage_line((current_pop - 1 as u8) as usize)
-            } else {
-                break;
+    pub fn enqueue_garbage_line(&mut self) {
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "BEFORE ENQUEUED: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+
+        //NOTE: Garbage Line Queue 채우기
+        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
+            //FIXME: GameMode::NORMAL이 아니라 Option값이 Garbage_On을 읽도록
+            let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+            let rand_garbage_height = floor(random() * 3 as f64) as usize;
+            for i in 0..rand_garbage_height + 1 {
+                log::info!("rand_garbage_height: {}", i);
+                self.garbage_queue.push_back(hole_loc as u8 + 1);
+                self.garbage_gauge_count += 1;
             }
+            self.garbage_queue.push_back(0);
+            for i in 0..self.garbage_queue.len() {
+                log::info!("AFTER ENQUEUED: i={}: hl={}, ", i, self.garbage_queue[i]);
+            }
+        }
+    }
+
+    pub fn trigger_garbage_line(&mut self) {
+        let mut current_pop;
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "BEFORE TRIGGERED: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+
+        while self.garbage_queue.len() != 0 {
+            current_pop = self.garbage_queue.pop_front().unwrap();
+            log::info!("current pop: {}", current_pop);
+            if current_pop == 0 {
+                if self.garbage_queue.len() != 0 && self.garbage_queue[0] == 0 {
+                    self.garbage_queue.pop_front();
+                    return;
+                } else {
+                    break;
+                }
+            } else {
+                self.add_garbage_line((current_pop - 1) as usize);
+            }
+        }
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "AFTER TRIGGERED: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+    }
+
+    pub fn delete_garbage_by(&mut self, delete_garbage: u8) {
+        let mut delete_garbage = delete_garbage.clone();
+        let mut current_pop;
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "BEFORE DELETE GARBAGE: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+
+        while self.garbage_queue.len() != 0 && delete_garbage != 0 {
+            current_pop = self.garbage_queue.pop_front().unwrap();
+            log::info!("current pop: {}", current_pop);
+            if current_pop == 0 {
+                if self.garbage_queue.len() != 0 && self.garbage_queue[0] == 0 {
+                    self.garbage_queue.pop_front();
+                    return;
+                }
+            } else {
+                self.garbage_gauge_count -= 1;
+                delete_garbage -= 1;
+            }
+        }
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "AFTER DELETE GARBAGE: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
         }
     }
 
     // 지울 줄이 있을 경우 줄을 지움
     fn clear_line(&mut self) -> ClearInfo {
         let mut line = 0;
+        log::info!("clear line call");
         // 스핀 여부 반환
         // 지운 줄 수 반환
         for y in (0..self.board.row_count).into_iter() {
@@ -243,11 +325,22 @@ impl GameInfo {
                     self.combo = Some(combo + 1);
 
                     match line {
-                        1..=3 => {
-                            self.message = None;
+                        1 => {
+                            self.message = Some("Single".into());
+                            self.delete_garbage_by(1);
+                            log::info!("delete 1");
+                        }
+                        2 => {
+                            self.message = Some("Double".into());
+                            self.delete_garbage_by(2);
+                        }
+                        3 => {
+                            self.message = Some("Triple".into());
+                            self.delete_garbage_by(4);
                         }
                         4 => {
                             self.message = Some("Quad".into());
+                            self.delete_garbage_by(10);
                         }
                         _ => {}
                     }
@@ -256,11 +349,22 @@ impl GameInfo {
                     self.combo = Some(0);
 
                     match line {
-                        1..=3 => {
-                            self.message = None;
+                        1 => {
+                            self.message = Some("Single".into());
+                            self.delete_garbage_by(1);
+                            log::info!("delete 1");
+                        }
+                        2 => {
+                            self.message = Some("Double".into());
+                            self.delete_garbage_by(2);
+                        }
+                        3 => {
+                            self.message = Some("Triple".into());
+                            self.delete_garbage_by(4);
                         }
                         4 => {
                             self.message = Some("Quad".into());
+                            self.delete_garbage_by(10);
                             self.record.quad_count += 1;
                             is_back2back = true
                         }
@@ -314,6 +418,7 @@ impl GameInfo {
         } else {
             self.combo = None;
             self.trigger_garbage_line();
+            self.enqueue_garbage_line();
         }
 
         let score = calculate_score(
@@ -353,17 +458,6 @@ impl GameInfo {
             "lineclearcount",
             format!("{}", self.record.line_clear_count),
         );
-
-        //NOTE: Garbage Line Queue 채우기
-        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
-            let hole_loc = floor(random() * self.board.column_count as f64) as usize;
-            let height = floor(random() * 3 as f64) as usize;
-            for _i in 0..height {
-                self.garbage_queue.push_back(hole_loc as u8 + 1 as u8);
-                self.garbage_gauge_count += 1;
-            }
-            self.garbage_queue.push_back(0);
-        }
     }
 
     // 한칸 내려간 후에 트리거
