@@ -1,4 +1,4 @@
-use yew::{function_component, html};
+use yew::{function_component, html, Html};
 use yew_router::prelude::*;
 
 use crate::components::route::{switch, Route};
@@ -7,7 +7,7 @@ use crate::components::route::{switch, Route};
 pub fn main_component() -> Html {
     html! {
         <BrowserRouter>
-            <Switch<Route> render={Switch::render(switch)} />
+            <Switch<Route> render={switch} />
         </BrowserRouter>
     }
 }
