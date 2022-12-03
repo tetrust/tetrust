@@ -9,5 +9,5 @@ pub mod wasm_bind;
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    yew::start_app::<components::main::MainComponent>();
+    yew::Renderer::<components::main::MainComponent>::new().render();
 }

@@ -1,15 +1,17 @@
-use yew::{function_component, html, use_state,Callback};
 use web_sys::KeyboardEvent;
+use yew::{function_component, html, use_state, Callback, Html};
 
 // game_manager on)play가 아닌경우, 값을 초기화
 #[function_component(ScoreBox)]
-pub fn score_box() -> html {
+pub fn score_box() -> Html {
     let time_count = use_state(|| 1);
 
-    let onkeypress = Callback::from(move |event: KeyboardEvent| {
-     let time_count = time_count.clone();
+    let _time_count = time_count.clone();
+    let onkeypress = Callback::from(move |_event: KeyboardEvent| {
+        let time_count = time_count.clone();
         time_count.set(*time_count + 1);
     });
+
     html! {
         <section {onkeypress}>
                 < div class="flex flex-col justify-between mb-[30px]">
@@ -27,7 +29,7 @@ pub fn score_box() -> html {
                     </dl>
                                         <dl class="flex flex-row justify-between">
                         <dt class="font-mono text-base	">{"timeCount"}</dt>
-                        <dd id="pc">{*time_count}</dd>
+                        <dd id="pc">{*_time_count}</dd>
                     </dl>
                 </div>
                 </section>
