@@ -466,7 +466,7 @@ impl GameInfo {
     }
 
     // 한칸씩 아래로 내려가는 중력 동작
-    pub fn tick(&mut self) {
+    pub fn gravity_drop(&mut self) {
         if self.game_state != GameState::PLAYING {
             return;
         }
@@ -725,7 +725,7 @@ impl GameInfo {
 
     // 소프트드랍
     pub fn soft_drop(&mut self) {
-        self.tick();
+        self.gravity_drop();
     }
 
     // 하드드랍될 위치 획득
@@ -784,7 +784,7 @@ impl GameInfo {
 
             self.hold_used = true;
 
-            self.tick();
+            self.gravity_drop();
         }
     }
 
