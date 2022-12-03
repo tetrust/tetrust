@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::constants::character::SPECIAL_SPACE;
-use crate::constants::time::GRAVITY_DROP_INTERVAL;
+use crate::constants::time::TICK_LOOP_INTERVAL;
 use crate::game::game_info::GameInfo;
 use crate::js_bind::request_animation_frame::request_animation_frame;
 use crate::js_bind::write_text::write_text;
@@ -73,7 +73,7 @@ impl GameManager {
 
         log::info!("GAME START");
 
-        // gravity_drop - 중력 스레드
+        // tick - 중력 스레드
         let game_info = Rc::clone(&self.game_info);
         let mut former_lock_delay_count: u8 = 0;
         spawn_local(async move {
@@ -83,8 +83,8 @@ impl GameManager {
             let game_info = game_info;
             let _game_info = Rc::clone(&game_info);
 
-            // 기본 30밀리초 단위마다 반복해서 타임 체크 (더 세밀한 제어가 필요하다면 문제없는 선에서 낮춰도 무방)
-            let mut future_list = IntervalStream::new(GRAVITY_DROP_INTERVAL).map(move |_| {
+            // 기본 100밀리초 단위마다 반복해서 타임 체크 (더 세밀한 제어가 필요하다면 문제없는 선에서 낮춰도 무방)
+            let mut future_list = IntervalStream::new(TICK_LOOP_INTERVAL).map(move |_| {
                 let mut game_info = game_info.borrow_mut();
                 if former_lock_delay_count != game_info.lock_delay_count {
                     if game_info.lock_delay_count < 8 {
@@ -100,17 +100,14 @@ impl GameManager {
 
                 let duration = start_point.elapsed();
 
-                // gravity_drop이 발생하지 않은 시점에서 경과된 시간.
+                // tick이 발생하지 않은 시점에서 경과된 시간.
                 let elapsed_time = duration.as_millis();
 
                 // 여기서 딜레이 커스텀하면 될듯
                 let delay = game_info.gravity_drop_interval as u128 + (game_info.lock_delay as u128);
 
-                // 지정된 딜레이만큼 지났다면 다시 초기화하고 gravity_drop 한칸 수행
-                if game_info.on_down_move != None {
-                    game_info.gravity_drop();
-                }
-                else if elapsed_time >= delay {
+                // 지정된 딜레이만큼 지났다면 다시 초기화하고 tick 한칸 수행
+                if elapsed_time >= delay {
                     start_point = instant::Instant::now();
                     game_info.gravity_drop();
                 }

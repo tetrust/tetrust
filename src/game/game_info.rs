@@ -133,8 +133,8 @@ impl GameInfo {
             in_spin: SpinType::None,
             lock_delay: 500,
             das: 300, // 좌우 DAS DEFAULT VALUE
-            sdf: 5,   //FIXME: 미사용
-            arr: 0,   //FIXME: 미사용
+            sdf: 5, //FIXME: 미사용
+            arr: 0, //FIXME: 미사용
             start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
