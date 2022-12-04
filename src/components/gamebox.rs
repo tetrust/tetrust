@@ -210,13 +210,11 @@ pub fn game_box() -> Html {
     html! {
         <article id="gamebox" tabindex="0" class="flex justify-center">
             <aside class="flex flex-col m-5 justify-between">
-                <dl class="mb-[150px] side-canvas">
+                <dl class="mb-[10px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
                     <dd><canvas id="hold-canvas" class="" width="120" height="120"></canvas></dd>
                 </dl>
-
-
-                <dl class="flex flex-col justify-between mb-[80px]">
+                <dl class="flex flex-col justify-between mb-[10px]">
                     <dt id="combo" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="back2back" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="message" class="font-mono text-base text-center">{" "}</dt>
@@ -268,6 +266,9 @@ pub fn game_box() -> Html {
                     <label for="normal">{"Sprint(40 Lines)"}</label>
                 </div>
             </aside>
+            <dl class="mt-[20px] mr-[10px] side-canvas">
+                <dd><canvas id="garbage-gauge-canvas" class="" width="30" height="600"></canvas></dd>
+            </dl>
 
             <section class="my-5">
                 <canvas id="game-canvas" width="300" height="600"></canvas>
