@@ -229,24 +229,8 @@ pub fn game_box() -> Html {
                         <dt class="font-mono text-base	">{"Lines"}</dt>
                         <dd id="lineclearcount" class="font-mono text-base">{"0"}</dd>
                     </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	">{"Score"}</dt>
-                        <dd id="score">{"0"}</dd>
-                    </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	content-start">{"Quad"}</dt>
-                        <dd id="quad">{"0"}</dd>
-                    </dl>
                 </div>
 
-                 // <div class="flex flex-col justify-between mb-[30px]">
-                //     <dl class="flex flex-row justify-between">
-                //         <dt class="font-mono text-base	">{"Score"}</dt>
-                //         <dd id="score">{"0"}</dd>
-                //     </dl>
-
-                //     </dl>
-                // </div>
                 <ScoreBox/>
 
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick={onclick} disabled={*start_disabled}>{"Start"}</button>
