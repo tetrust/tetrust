@@ -551,6 +551,18 @@ impl GameInfo {
         }
     }
 
+    // 아래 끝까지 이동
+    pub fn down_move_end(&mut self) {
+        let position = self.get_hard_drop_position();
+
+        match position {
+            Some(position) => {
+                self.current_position = position;
+            }
+            None => {}
+        }
+    }
+
     // 오른쪽 이동
     pub fn right_move(&mut self) {
         if let Some(current_block) = self.current_block {

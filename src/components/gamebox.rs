@@ -102,7 +102,11 @@ pub fn game_box() -> Html {
             } // right move
             keycode::DOWN => {
                 if !event.repeat() {
-                    game_info.borrow_mut().soft_drop();
+                    if game_info.borrow().sdf_is_infinity {
+                        game_info.borrow_mut().down_move_end();
+                    } else {
+                        game_info.borrow_mut().soft_drop();
+                    }
                 }
             } // down move
             keycode::Z => {
@@ -139,41 +143,6 @@ pub fn game_box() -> Html {
         .unwrap();
 
     keydown.forget();
-
-    // let onkeypress = Callback::from(move |event: KeyboardEvent| {
-    //     match event.key_code() {
-    //         keycode::LEFT => {
-    //             game_info.borrow_mut().left_move();
-    //             game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
-
-    //             let game_info = Rc::clone(&game_info);
-
-    //             Timeout::new(das, move || {
-    //                 if game_info.borrow().on_left_move.is_some() {
-    //                     game_info.borrow_mut().left_move_end();
-    //                 }
-    //             })
-    //             .forget();
-    //         } // left move
-    //         keycode::RIGHT => {
-    //             game_info.borrow_mut().right_move();
-    //             game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
-
-    //             let game_info = Rc::clone(&game_info);
-
-    //             Timeout::new(das, move || {
-    //                 if game_info.borrow().on_right_move.is_some() {
-    //                     game_info.borrow_mut().right_move_end();
-    //                 }
-    //             })
-    //             .forget();
-    //         } // right move
-    //         keycode::DOWN => {
-    //             game_info.borrow_mut().soft_drop();
-    //         } // down move
-    //         _ => {}
-    //     }
-    // });
 
     let game_info = Rc::clone(&_game_info);
 
