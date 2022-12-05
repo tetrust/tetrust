@@ -134,7 +134,7 @@ impl GameInfo {
             in_spin: SpinType::None,
             lock_delay: 500,
             das: 300, // 좌우 DAS DEFAULT VALUE
-            sdf: 5,   //FIXME: 미사용
+            sdf: 300,
             sdf_is_infinity: false,
             arr: 0, //FIXME: 미사용
             start_time: Date::new_0(),

@@ -105,7 +105,22 @@ pub fn game_box() -> Html {
                     if game_info.borrow().sdf_is_infinity {
                         game_info.borrow_mut().down_move_end();
                     } else {
+                        game_info.borrow_mut().on_down_move = None;
                         game_info.borrow_mut().soft_drop();
+
+                        let _game_info = Rc::clone(&game_info);
+                        let game_info = Rc::clone(&_game_info);
+
+                        Timeout::new(das, move || {
+                            if game_info.borrow().on_down_move.is_some() {
+                                game_info.borrow_mut().down_move_end();
+                            }
+                        })
+                        .forget();
+
+                        let game_info = Rc::clone(&_game_info);
+
+                        game_info.borrow_mut().on_down_move = Some(instant::Instant::now());
                     }
                 }
             } // down move
