@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use instant::Instant;
 use js_sys::Date;
-use js_sys::Math::{random, floor};
+use js_sys::Math::{floor, random};
 
 use crate::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
@@ -43,13 +43,15 @@ pub struct GameInfo {
     pub freezed: bool, //현재 블럭이 보드에 붙었는지?
     pub lose: bool,    //현재 게임 오버 여부
 
-    pub next_count: i32,           // 넥스트 개수
-    pub bag: VecDeque<BlockShape>, // 현재 가방
+    pub next_count: i32,             // 넥스트 개수
+    pub bag: VecDeque<BlockShape>,   // 현재 가방
+    pub garbage_queue: VecDeque<u8>, // 쓰레기라인대기열
+    pub garbage_gauge_count: u64,    // 쌓인 쓰레기줄 수, 새 block write 시점에 남아있으면 올라옴
 
     pub board: Board, // 보드
 
-    pub render_interval: u64, //렌더링 시간간격(밀리초)
-    pub tick_interval: u64,   //틱당 시간간격(밀리초)
+    pub render_interval: u64,       //렌더링 시간간격(밀리초)
+    pub gravity_drop_interval: u64, //틱당 시간간격(밀리초)
 
     pub bag_mode: BagType, //가방 순환 규칙 사용여부 (false면 완전 랜덤. true면 한 묶음에서 랜덤)
     pub block_list: Vec<BlockShape>, //블럭 리스트
@@ -68,6 +70,7 @@ pub struct GameInfo {
     pub lock_delay_count: u8, // 하좌우이동, 좌우회전 성공 시 록딜레이 카운트가 올라감. 틱스레드에서 변화를 읽고 start를 초기화. 8이상이면 안올라감
 
     pub sdf: u32, // SDF: Soft Drop Factor. 소프트 드랍 Key가 눌러졌을 때 자연드랍속도를 몇배 더 빠르게할지 설정
+    pub sdf_is_infinity: bool, // 소프트드랍시 바로 바닥에 닿도록 함
     pub das: u32, // DAS: Delayed Auto Shift의 약자. Key를 Holding하여 Auto Shift가 시작되기까지의 시간, ms단위
     pub arr: u32, // ARR: Auto Repeat Rate: Auto Shift가 활성화되었을 때 이동이 반복되는 사이클타임, ms단위
 
@@ -109,18 +112,20 @@ impl GameInfo {
         Self {
             record: Default::default(),
             render_interval: 200,
-            tick_interval: 1000,
+            gravity_drop_interval: 1000,
             current_position: Default::default(),
             current_block: None,
             freezed: false,
             next_count: 5,
             bag: VecDeque::new(),
+            garbage_queue: VecDeque::new(),
             board,
             game_mode: GameMode::NORMAL,
             game_state: GameState::IDLE,
             lose: false,
             bag_mode,
             block_list,
+            garbage_gauge_count: 0,
             hold: None,
             hold_used: false,
             back2back: None,
@@ -129,7 +134,8 @@ impl GameInfo {
             in_spin: SpinType::None,
             lock_delay: 500,
             das: 300, // 좌우 DAS DEFAULT VALUE
-            sdf: 0, //FIXME: 미사용
+            sdf: 300,
+            sdf_is_infinity: false,
             arr: 0, //FIXME: 미사용
             start_time: Date::new_0(),
             running_time: 0,
@@ -177,27 +183,119 @@ impl GameInfo {
         Some(())
     }
 
-    pub fn add_garbage_line(&mut self, hole_loc: usize, height: usize) {
+    pub fn add_garbage_line(&mut self, hole_loc: usize) {
         let board_height = self.board.cells.len();
 
-        for row in 0..(board_height - height) {
-            self.board.cells[row] = self.board.cells[row + height].clone();
+        self.garbage_gauge_count -= 1 as u64;
+        for row in 0..(board_height - 1) {
+            self.board.cells[row] = self.board.cells[row + 1].clone();
         }
 
-        for row in 0..height {
-            for (i, cell) in self.board.cells[board_height - 1 - row].iter_mut().enumerate() {
-                *cell = if i == hole_loc {
-                    Cell::Empty
-                } else {
-                    Cell::Garbage
-                };
+        for (i, cell) in self.board.cells[board_height - 1].iter_mut().enumerate() {
+            *cell = if i == hole_loc {
+                Cell::Empty
+            } else {
+                Cell::Garbage
+            };
+        }
+    }
+
+    pub fn enqueue_garbage_line(&mut self) {
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "BEFORE ENQUEUED: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+
+        //NOTE: Garbage Line Queue 채우기
+        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
+            //FIXME: GameMode::NORMAL이 아니라 Option값이 Garbage_On을 읽도록
+            let hole_loc = floor(random() * self.board.column_count as f64) as usize;
+            let rand_garbage_height = floor(random() * 3 as f64) as usize;
+            for i in 0..rand_garbage_height + 1 {
+                log::info!("rand_garbage_height: {}", i);
+                self.garbage_queue.push_back(hole_loc as u8 + 1);
+                self.garbage_gauge_count += 1;
             }
+            self.garbage_queue.push_back(0);
+            for i in 0..self.garbage_queue.len() {
+                log::info!("AFTER ENQUEUED: i={}: hl={}, ", i, self.garbage_queue[i]);
+            }
+        }
+    }
+
+    pub fn trigger_garbage_line(&mut self) {
+        let mut current_pop;
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "BEFORE TRIGGERED: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+
+        while self.garbage_queue.len() != 0 {
+            current_pop = self.garbage_queue.pop_front().unwrap();
+            log::info!("current pop: {}", current_pop);
+            if current_pop == 0 {
+                if self.garbage_queue.len() != 0 && self.garbage_queue[0] == 0 {
+                    self.garbage_queue.pop_front();
+                    return;
+                } else {
+                    break;
+                }
+            } else {
+                self.add_garbage_line((current_pop - 1) as usize);
+            }
+        }
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "AFTER TRIGGERED: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+    }
+
+    pub fn delete_garbage_by(&mut self, delete_garbage: u8) {
+        let mut delete_garbage = delete_garbage.clone();
+        let mut current_pop;
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "BEFORE DELETE GARBAGE: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
+        }
+
+        while self.garbage_queue.len() != 0 && delete_garbage != 0 {
+            current_pop = self.garbage_queue.pop_front().unwrap();
+            log::info!("current pop: {}", current_pop);
+            if current_pop == 0 {
+                if self.garbage_queue.len() != 0 && self.garbage_queue[0] == 0 {
+                    self.garbage_queue.pop_front();
+                    return;
+                }
+            } else {
+                self.garbage_gauge_count -= 1;
+                delete_garbage -= 1;
+            }
+        }
+        for i in 0..self.garbage_queue.len() {
+            log::info!(
+                "AFTER DELETE GARBAGE: i = {}: hl = {}, ",
+                i,
+                self.garbage_queue[i]
+            );
         }
     }
 
     // 지울 줄이 있을 경우 줄을 지움
     fn clear_line(&mut self) -> ClearInfo {
         let mut line = 0;
+        log::info!("clear line call");
         // 스핀 여부 반환
         // 지운 줄 수 반환
         for y in (0..self.board.row_count).into_iter() {
@@ -229,11 +327,22 @@ impl GameInfo {
                     self.combo = Some(combo + 1);
 
                     match line {
-                        1..=3 => {
-                            self.message = None;
+                        1 => {
+                            self.message = Some("Single".into());
+                            self.delete_garbage_by(1);
+                            log::info!("delete 1");
+                        }
+                        2 => {
+                            self.message = Some("Double".into());
+                            self.delete_garbage_by(2);
+                        }
+                        3 => {
+                            self.message = Some("Triple".into());
+                            self.delete_garbage_by(4);
                         }
                         4 => {
                             self.message = Some("Quad".into());
+                            self.delete_garbage_by(10);
                         }
                         _ => {}
                     }
@@ -242,11 +351,22 @@ impl GameInfo {
                     self.combo = Some(0);
 
                     match line {
-                        1..=3 => {
-                            self.message = None;
+                        1 => {
+                            self.message = Some("Single".into());
+                            self.delete_garbage_by(1);
+                            log::info!("delete 1");
+                        }
+                        2 => {
+                            self.message = Some("Double".into());
+                            self.delete_garbage_by(2);
+                        }
+                        3 => {
+                            self.message = Some("Triple".into());
+                            self.delete_garbage_by(4);
                         }
                         4 => {
                             self.message = Some("Quad".into());
+                            self.delete_garbage_by(10);
                             self.record.quad_count += 1;
                             is_back2back = true
                         }
@@ -299,6 +419,8 @@ impl GameInfo {
             }
         } else {
             self.combo = None;
+            self.trigger_garbage_line();
+            self.enqueue_garbage_line();
         }
 
         let score = calculate_score(
@@ -327,7 +449,6 @@ impl GameInfo {
                 .write_current_block(current_block.cells, self.current_position);
             self.current_block = None;
             self.lock_delay_count = 0;
-
             self.hold_used = false;
         }
     }
@@ -335,7 +456,10 @@ impl GameInfo {
     // clear 처리 후에 트리거 (줄이 지워지는지 여부와 별개)
     fn after_clear(&mut self) {
         self.in_spin = SpinType::None;
-        write_text("lineclearcount", format!("{}", self.record.line_clear_count));
+        write_text(
+            "lineclearcount",
+            format!("{}", self.record.line_clear_count),
+        );
     }
 
     // 한칸 내려간 후에 트리거
@@ -344,7 +468,7 @@ impl GameInfo {
     }
 
     // 한칸씩 아래로 내려가는 중력 동작
-    pub fn tick(&mut self) {
+    pub fn gravity_drop(&mut self) {
         if self.game_state != GameState::PLAYING {
             return;
         }
@@ -365,13 +489,6 @@ impl GameInfo {
                 }
             }
             None => {
-                //NOTE: fill dummies for testing 
-                if random()>0.5 && self.game_mode == GameMode::NORMAL{
-                    let hole_loc = floor(random() * self.board.column_count as f64) as usize;
-                    let height = floor(random() * 3 as f64) as usize;
-                        self.add_garbage_line(hole_loc, height); 
-                }
-
                 let block = self.get_block();
                 self.current_block = Some(block);
 
@@ -431,6 +548,18 @@ impl GameInfo {
             ) {
                 self.lock_delay_count += 1;
             }
+        }
+    }
+
+    // 아래 끝까지 이동
+    pub fn down_move_end(&mut self) {
+        let position = self.get_hard_drop_position();
+
+        match position {
+            Some(position) => {
+                self.current_position = position;
+            }
+            None => {}
         }
     }
 
@@ -610,7 +739,7 @@ impl GameInfo {
 
     // 소프트드랍
     pub fn soft_drop(&mut self) {
-        self.tick();
+        self.gravity_drop();
     }
 
     // 하드드랍될 위치 획득
@@ -641,12 +770,9 @@ impl GameInfo {
         match position {
             Some(position) => {
                 self.current_position = position;
-
                 self.fix_current_block();
-
                 self.clear_line();
-
-                self.tick();
+                self.gravity_drop();
             }
             None => {}
         }
@@ -672,7 +798,7 @@ impl GameInfo {
 
             self.hold_used = true;
 
-            self.tick();
+            self.gravity_drop();
         }
     }
 
@@ -732,6 +858,8 @@ impl GameInfo {
         self.current_block = None;
         self.hold_used = false;
         self.hold = None;
+        self.garbage_gauge_count = 0;
+        self.garbage_queue = VecDeque::new();
 
         Some(())
     }

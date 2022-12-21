@@ -102,7 +102,26 @@ pub fn game_box() -> Html {
             } // right move
             keycode::DOWN => {
                 if !event.repeat() {
-                    game_info.borrow_mut().soft_drop();
+                    if game_info.borrow().sdf_is_infinity {
+                        game_info.borrow_mut().down_move_end();
+                    } else {
+                        game_info.borrow_mut().on_down_move = None;
+                        game_info.borrow_mut().soft_drop();
+
+                        let _game_info = Rc::clone(&game_info);
+                        let game_info = Rc::clone(&_game_info);
+
+                        Timeout::new(das, move || {
+                            if game_info.borrow().on_down_move.is_some() {
+                                game_info.borrow_mut().down_move_end();
+                            }
+                        })
+                        .forget();
+
+                        let game_info = Rc::clone(&_game_info);
+
+                        game_info.borrow_mut().on_down_move = Some(instant::Instant::now());
+                    }
                 }
             } // down move
             keycode::Z => {
@@ -140,41 +159,6 @@ pub fn game_box() -> Html {
 
     keydown.forget();
 
-    // let onkeypress = Callback::from(move |event: KeyboardEvent| {
-    //     match event.key_code() {
-    //         keycode::LEFT => {
-    //             game_info.borrow_mut().left_move();
-    //             game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
-
-    //             let game_info = Rc::clone(&game_info);
-
-    //             Timeout::new(das, move || {
-    //                 if game_info.borrow().on_left_move.is_some() {
-    //                     game_info.borrow_mut().left_move_end();
-    //                 }
-    //             })
-    //             .forget();
-    //         } // left move
-    //         keycode::RIGHT => {
-    //             game_info.borrow_mut().right_move();
-    //             game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
-
-    //             let game_info = Rc::clone(&game_info);
-
-    //             Timeout::new(das, move || {
-    //                 if game_info.borrow().on_right_move.is_some() {
-    //                     game_info.borrow_mut().right_move_end();
-    //                 }
-    //             })
-    //             .forget();
-    //         } // right move
-    //         keycode::DOWN => {
-    //             game_info.borrow_mut().soft_drop();
-    //         } // down move
-    //         _ => {}
-    //     }
-    // });
-
     let game_info = Rc::clone(&_game_info);
 
     let keyup = Closure::wrap(Box::new(move |event: KeyboardEvent| {
@@ -210,13 +194,11 @@ pub fn game_box() -> Html {
     html! {
         <article id="gamebox" tabindex="0" class="flex justify-center">
             <aside class="flex flex-col m-5 justify-between">
-                <dl class="mb-[150px] side-canvas">
+                <dl class="mb-[10px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>
                     <dd><canvas id="hold-canvas" class="" width="120" height="120"></canvas></dd>
                 </dl>
-
-
-                <dl class="flex flex-col justify-between mb-[80px]">
+                <dl class="flex flex-col justify-between mb-[10px]">
                     <dt id="combo" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="back2back" class="font-mono text-base text-center">{" "}</dt>
                     <dt id="message" class="font-mono text-base text-center">{" "}</dt>
@@ -231,24 +213,8 @@ pub fn game_box() -> Html {
                         <dt class="font-mono text-base	">{"Lines"}</dt>
                         <dd id="lineclearcount" class="font-mono text-base">{"0"}</dd>
                     </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	">{"Score"}</dt>
-                        <dd id="score">{"0"}</dd>
-                    </dl>
-                    <dl class="flex flex-row justify-between">
-                        <dt class="font-mono text-base	content-start">{"Quad"}</dt>
-                        <dd id="quad">{"0"}</dd>
-                    </dl>
                 </div>
 
-                 // <div class="flex flex-col justify-between mb-[30px]">
-                //     <dl class="flex flex-row justify-between">
-                //         <dt class="font-mono text-base	">{"Score"}</dt>
-                //         <dd id="score">{"0"}</dd>
-                //     </dl>
-
-                //     </dl>
-                // </div>
                 <ScoreBox/>
 
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" onclick={onclick} disabled={*start_disabled}>{"Start"}</button>
@@ -268,6 +234,9 @@ pub fn game_box() -> Html {
                     <label for="normal">{"Sprint(40 Lines)"}</label>
                 </div>
             </aside>
+            <dl class="mt-[20px] mr-[10px] side-canvas">
+                <dd><canvas id="garbage-gauge-canvas" class="" width="30" height="600"></canvas></dd>
+            </dl>
 
             <section class="my-5">
                 <canvas id="game-canvas" width="300" height="600"></canvas>
