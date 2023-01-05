@@ -136,6 +136,8 @@ impl GameManager {
 
         // 렌더링 스레드
         let game_info = Rc::clone(&self.game_info);
+        let event_queue = Rc::clone(&self.event_queue);
+
         spawn_local(async move {
             let f = Rc::new(RefCell::new(None));
             let g = f.clone();
@@ -165,6 +167,8 @@ impl GameManager {
                     }
                     None => game_info.board.clone(),
                 };
+
+                // TODO: 여기서 event_queue 읽어서 이벤트 처리?
 
                 wasm_bind::render_board(
                     board.unfold(),
