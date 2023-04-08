@@ -2,6 +2,7 @@ use futures_util::stream::StreamExt;
 use gloo_timers::future::IntervalStream;
 use js_sys::Date;
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::rc::Rc;
 
 use wasm_bindgen::prelude::Closure;
@@ -10,6 +11,7 @@ use wasm_bindgen_futures::spawn_local;
 use crate::constants::character::SPECIAL_SPACE;
 use crate::constants::time::GRAVITY_DROP_INTERVAL;
 use crate::game::game_info::GameInfo;
+use crate::game::Event;
 use crate::js_bind::request_animation_frame::request_animation_frame;
 use crate::js_bind::write_text::write_text;
 use crate::options::game_option::GameOption;
@@ -19,6 +21,7 @@ use super::GameState;
 
 pub struct GameManager {
     pub game_info: Rc<RefCell<GameInfo>>,
+    pub event_queue: Rc<RefCell<VecDeque<Event>>>,
 }
 
 impl GameManager {
@@ -52,7 +55,12 @@ impl GameManager {
 
         let game_info = Rc::new(RefCell::new(game_info));
 
-        Self { game_info }
+        let event_queue = Rc::new(RefCell::new(VecDeque::new()));
+
+        Self {
+            game_info,
+            event_queue,
+        }
     }
 
     pub fn playing(&self) -> bool {
@@ -61,7 +69,7 @@ impl GameManager {
 
     pub fn start_game(&self) -> Option<()> {
         if self.playing() {
-            return None
+            return None;
         }
 
         /* FIXME? */
@@ -76,6 +84,7 @@ impl GameManager {
         // gravity_drop - 중력 스레드
         let game_info = Rc::clone(&self.game_info);
         let mut former_lock_delay_count: u8 = 0;
+
         spawn_local(async move {
             // 시작 기준점
             let mut start_point = instant::Instant::now();
@@ -104,7 +113,8 @@ impl GameManager {
                 let elapsed_time = duration.as_millis();
 
                 // 여기서 딜레이 커스텀하면 될듯
-                let delay = game_info.gravity_drop_interval as u128 + (game_info.lock_delay as u128);
+                let delay =
+                    game_info.gravity_drop_interval as u128 + (game_info.lock_delay as u128);
 
                 // 지정된 딜레이만큼 지났다면 다시 초기화하고 gravity_drop 한칸 수행
                 if elapsed_time >= delay {
@@ -125,13 +135,46 @@ impl GameManager {
         });
 
         // 렌더링 스레드
-        let game_info = Rc::clone(&self.game_info);
+        let _game_info = Rc::clone(&self.game_info);
+        let event_queue = Rc::clone(&self.event_queue);
+
         spawn_local(async move {
             let f = Rc::new(RefCell::new(None));
             let g = f.clone();
 
             *g.borrow_mut() = Some(Closure::new(move || {
-                let game_info = game_info.borrow_mut();
+                if let Some(event) = event_queue.borrow_mut().pop_front() {
+                    match event {
+                        Event::LeftMove => {
+                            _game_info.borrow_mut().left_move();
+                        }
+                        Event::LeftMoveStop => {}
+                        Event::RightMove => {
+                            _game_info.borrow_mut().right_move();
+                        }
+                        Event::RightMoveStop => {}
+                        Event::LeftRotate => {
+                            _game_info.borrow_mut().left_rotate();
+                        }
+                        Event::RightRotate => {
+                            _game_info.borrow_mut().right_rotate();
+                        }
+                        Event::HardDrop => {
+                            _game_info.borrow_mut().hard_drop();
+                        }
+                        Event::Hold => {
+                            _game_info.borrow_mut().hold();
+                        }
+                        Event::SoftDrop => {
+                            _game_info.borrow_mut().soft_drop();
+                        }
+                        Event::DoubleRotate => {}
+                    }
+                }
+
+                event_queue.borrow_mut().clear();
+
+                let game_info = _game_info.borrow_mut();
 
                 if game_info.game_state == GameState::GAMEOVER {
                     // Drop our handle to this closure so that it will get cleaned
@@ -156,47 +199,56 @@ impl GameManager {
                     None => game_info.board.clone(),
                 };
 
-                wasm_bind::render_board(
-                    board.unfold(),
-                    board.board_width,
-                    board.board_height,
-                    board.column_count,
-                    board.row_count,
-                    board.hidden_row_count,
-                );
+                // 렌더링 수행
+                {
+                    wasm_bind::render_board(
+                        board.unfold(),
+                        board.board_width,
+                        board.board_height,
+                        board.column_count,
+                        board.row_count,
+                        board.hidden_row_count,
+                    );
 
-                let next = game_info.bag.iter().map(|e| e.block.into()).collect();
-                wasm_bind::render_next(next, 120, 520, 6, 26);
+                    let next = game_info.bag.iter().map(|e| e.block.into()).collect();
+                    wasm_bind::render_next(next, 120, 520, 6, 26);
 
-                wasm_bind::render_hold(game_info.hold.map(|e| e.block.into()), 120, 120, 6, 6);
-                wasm_bind::render_garbage_gauge(game_info.garbage_gauge_count);
+                    wasm_bind::render_hold(game_info.hold.map(|e| e.block.into()), 120, 120, 6, 6);
+                    wasm_bind::render_garbage_gauge(game_info.garbage_gauge_count);
 
-                write_text("time", format!("{:.2}", game_info.running_time as f64 / 1000.0f64));
-                write_text("score", game_info.record.score.to_string());
-                write_text("pc", game_info.record.perfect_clear_count.to_string());
-                write_text("quad", game_info.record.quad_count.to_string());
-                write_text("lineclearcount", format!("{}", game_info.record.line_clear_count));
+                    write_text(
+                        "time",
+                        format!("{:.2}", game_info.running_time as f64 / 1000.0f64),
+                    );
+                    write_text("score", game_info.record.score.to_string());
+                    write_text("pc", game_info.record.perfect_clear_count.to_string());
+                    write_text("quad", game_info.record.quad_count.to_string());
+                    write_text(
+                        "lineclearcount",
+                        format!("{}", game_info.record.line_clear_count),
+                    );
 
-                if let Some(back2back) = game_info.back2back {
-                    if back2back != 0 {
-                        write_text("back2back", format!("Back2Back {}", back2back));
+                    if let Some(back2back) = game_info.back2back {
+                        if back2back != 0 {
+                            write_text("back2back", format!("Back2Back {}", back2back));
+                        }
+                    } else {
+                        write_text("back2back", SPECIAL_SPACE.into());
                     }
-                } else {
-                    write_text("back2back", SPECIAL_SPACE.into());
-                }
 
-                if let Some(combo) = game_info.combo {
-                    if combo > 0 {
-                        write_text("combo", format!("Combo {}", combo));
+                    if let Some(combo) = game_info.combo {
+                        if combo > 0 {
+                            write_text("combo", format!("Combo {}", combo));
+                        }
+                    } else {
+                        write_text("combo", SPECIAL_SPACE.into());
                     }
-                } else {
-                    write_text("combo", SPECIAL_SPACE.into());
-                }
 
-                if let Some(message) = game_info.message.clone() {
-                    write_text("message", message);
-                } else {
-                    write_text("message", SPECIAL_SPACE.into());
+                    if let Some(message) = game_info.message.clone() {
+                        write_text("message", message);
+                    } else {
+                        write_text("message", SPECIAL_SPACE.into());
+                    }
                 }
 
                 request_animation_frame(f.borrow().as_ref().unwrap());
