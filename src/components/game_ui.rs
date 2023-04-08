@@ -9,19 +9,19 @@ use yew::{function_component, html, use_effect_with_deps, use_state, Callback, H
 
 use crate::components::scorebox::ScoreBox;
 use crate::constants::keycode;
-use crate::game::manager::GameManager;
+use crate::game::renderer::GameRenderer;
 use crate::game::{Event, GameMode, GameState};
 use crate::js_bind::document::document;
 
-#[function_component(GameBox)]
-pub fn game_box() -> Html {
-    let game_manager = GameManager::new();
+#[function_component(GameUI)]
+pub fn game_ui() -> Html {
+    let game_renderer = GameRenderer::new();
 
-    let _event_queue = Rc::clone(&game_manager.event_queue);
+    let _event_queue = Rc::clone(&game_renderer.event_queue);
 
-    let _game_info = Rc::clone(&game_manager.game_info);
-    let game_info1 = Rc::clone(&game_manager.game_info);
-    let game_info2 = Rc::clone(&game_manager.game_info);
+    let _game_info = Rc::clone(&game_renderer.game_info);
+    let game_info1 = Rc::clone(&game_renderer.game_info);
+    let game_info2 = Rc::clone(&game_renderer.game_info);
 
     let das = _game_info.borrow().das.clone();
 
@@ -32,9 +32,9 @@ pub fn game_box() -> Html {
         let _start_disabled = _start_disabled;
 
         Callback::from(move |_: _| {
-            if !game_manager.playing() {
+            if !game_renderer.playing() {
                 //start_disabled.set(true);
-                game_manager.start_game();
+                game_renderer.start_game();
             }
         })
     };
@@ -210,14 +210,14 @@ pub fn game_box() -> Html {
     // 최초 렌더링시 호출
     use_effect_with_deps(
         move |_| {
-            GameManager::empty_render();
+            GameRenderer::empty_render();
             || ()
         },
         (),
     );
 
     html! {
-        <article id="gamebox" tabindex="0" class="flex justify-center">
+        <article id="game_ui" tabindex="0" class="flex justify-center">
             <aside class="flex flex-col m-5 justify-between">
                 <dl class="mb-[10px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>

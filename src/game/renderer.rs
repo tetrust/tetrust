@@ -19,16 +19,16 @@ use crate::wasm_bind;
 
 use super::GameState;
 
-pub struct GameManager {
+pub struct GameRenderer {
     pub game_info: Rc<RefCell<GameInfo>>,
     pub event_queue: Rc<RefCell<VecDeque<Event>>>,
 }
 
-impl GameManager {
+impl GameRenderer {
     pub fn empty_render() {
-        let manager = Self::new();
+        let renderer = Self::new();
 
-        let game_info = manager.game_info.borrow();
+        let game_info = renderer.game_info.borrow();
         let board = game_info.board.clone();
 
         wasm_bind::render_board(
