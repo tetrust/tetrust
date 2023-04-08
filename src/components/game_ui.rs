@@ -9,16 +9,19 @@ use yew::{function_component, html, use_effect_with_deps, use_state, Callback, H
 
 use crate::components::scorebox::ScoreBox;
 use crate::constants::keycode;
-use crate::game::manager::GameManager;
-use crate::game::{GameMode, GameState};
+use crate::game::renderer::GameRenderer;
+use crate::game::{Event, GameMode, GameState};
 use crate::js_bind::document::document;
 
-#[function_component(GameBox)]
-pub fn game_box() -> Html {
-    let game_manager = GameManager::new();
-    let _game_info = Rc::clone(&game_manager.game_info);
-    let game_info1 = Rc::clone(&game_manager.game_info);
-    let game_info2 = Rc::clone(&game_manager.game_info);
+#[function_component(GameUI)]
+pub fn game_ui() -> Html {
+    let game_renderer = GameRenderer::new();
+
+    let _event_queue = Rc::clone(&game_renderer.event_queue);
+
+    let _game_info = Rc::clone(&game_renderer.game_info);
+    let game_info1 = Rc::clone(&game_renderer.game_info);
+    let game_info2 = Rc::clone(&game_renderer.game_info);
 
     let das = _game_info.borrow().das.clone();
 
@@ -29,9 +32,9 @@ pub fn game_box() -> Html {
         let _start_disabled = _start_disabled;
 
         Callback::from(move |_: _| {
-            if !game_manager.playing() {
+            if !game_renderer.playing() {
                 //start_disabled.set(true);
-                game_manager.start_game();
+                game_renderer.start_game();
             }
         })
     };
@@ -56,98 +59,114 @@ pub fn game_box() -> Html {
         })
     };
 
-    let game_info = Rc::clone(&_game_info);
+    let event_queue = Rc::clone(&_event_queue);
 
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                if !event.repeat() {
-                    game_info.borrow_mut().on_right_move = None;
-                    game_info.borrow_mut().left_move();
+                event_queue.borrow_mut().push_back(Event::LeftMove);
 
-                    let _game_info = Rc::clone(&game_info);
-                    let game_info = Rc::clone(&_game_info);
+                // if !event.repeat() {
+                //     game_info.borrow_mut().on_right_move = None;
+                //     game_info.borrow_mut().left_move();
 
-                    Timeout::new(das, move || {
-                        if game_info.borrow().on_left_move.is_some() {
-                            game_info.borrow_mut().left_move_end();
-                        }
-                    })
-                    .forget();
+                //     let _game_info = Rc::clone(&game_info);
+                //     let game_info = Rc::clone(&_game_info);
 
-                    let game_info = Rc::clone(&_game_info);
+                //     Timeout::new(das, move || {
+                //         if game_info.borrow().on_left_move.is_some() {
+                //             game_info.borrow_mut().left_move_end();
+                //         }
+                //     })
+                //     .forget();
 
-                    game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
-                }
+                //     let game_info = Rc::clone(&_game_info);
+
+                //     game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
+                // }
             } // left move
             keycode::RIGHT => {
-                if !event.repeat() {
-                    game_info.borrow_mut().on_right_move = None;
-                    game_info.borrow_mut().right_move();
+                event_queue.borrow_mut().push_back(Event::RightMove);
 
-                    let _game_info = Rc::clone(&game_info);
-                    let game_info = Rc::clone(&_game_info);
+                // if !event.repeat() {
+                //     game_info.borrow_mut().on_right_move = None;
+                //     game_info.borrow_mut().right_move();
 
-                    Timeout::new(das, move || {
-                        if game_info.borrow().on_right_move.is_some() {
-                            game_info.borrow_mut().right_move_end();
-                        }
-                    })
-                    .forget();
+                //     let _game_info = Rc::clone(&game_info);
+                //     let game_info = Rc::clone(&_game_info);
 
-                    let game_info = Rc::clone(&_game_info);
+                //     Timeout::new(das, move || {
+                //         if game_info.borrow().on_right_move.is_some() {
+                //             game_info.borrow_mut().right_move_end();
+                //         }
+                //     })
+                //     .forget();
 
-                    game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
-                }
+                //     let game_info = Rc::clone(&_game_info);
+
+                //     game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
+                // }
             } // right move
             keycode::DOWN => {
-                if !event.repeat() {
-                    if game_info.borrow().sdf_is_infinity {
-                        game_info.borrow_mut().down_move_end();
-                    } else {
-                        game_info.borrow_mut().on_down_move = None;
-                        game_info.borrow_mut().soft_drop();
+                event_queue.borrow_mut().push_back(Event::SoftDrop);
 
-                        let _game_info = Rc::clone(&game_info);
-                        let game_info = Rc::clone(&_game_info);
+                // if !event.repeat() {
+                //     if game_info.borrow().sdf_is_infinity {
+                //         game_info.borrow_mut().down_move_end();
+                //     } else {
+                //         game_info.borrow_mut().on_down_move = None;
+                //         game_info.borrow_mut().soft_drop();
 
-                        Timeout::new(das, move || {
-                            if game_info.borrow().on_down_move.is_some() {
-                                game_info.borrow_mut().down_move_end();
-                            }
-                        })
-                        .forget();
+                //         let _game_info = Rc::clone(&game_info);
+                //         let game_info = Rc::clone(&_game_info);
 
-                        let game_info = Rc::clone(&_game_info);
+                //         Timeout::new(das, move || {
+                //             if game_info.borrow().on_down_move.is_some() {
+                //                 game_info.borrow_mut().down_move_end();
+                //             }
+                //         })
+                //         .forget();
 
-                        game_info.borrow_mut().on_down_move = Some(instant::Instant::now());
-                    }
-                }
+                //         let game_info = Rc::clone(&_game_info);
+
+                //         game_info.borrow_mut().on_down_move = Some(instant::Instant::now());
+                //     }
+                // }
             } // down move
             keycode::Z => {
-                if !event.repeat() {
-                    game_info.borrow_mut().left_rotate();
-                }
+                event_queue.borrow_mut().push_back(Event::LeftRotate);
+
+                // if !event.repeat() {
+                //     game_info.borrow_mut().left_rotate();
+                // }
             } // z
             keycode::X => {
-                if !event.repeat() {
-                    game_info.borrow_mut().right_rotate();
-                }
+                event_queue.borrow_mut().push_back(Event::RightRotate);
+
+                // if !event.repeat() {
+                //     game_info.borrow_mut().right_rotate();
+                // }
             } // x
             keycode::A => {
-                if !event.repeat() {
-                    game_info.borrow_mut().double_rotate();
-                }
+                event_queue.borrow_mut().push_back(Event::DoubleRotate);
+
+                // if !event.repeat() {
+                //     game_info.borrow_mut().double_rotate();
+                // }
             } // a
             keycode::SPACE => {
-                if !event.repeat() {
-                    game_info.borrow_mut().hard_drop();
-                }
+                event_queue.borrow_mut().push_back(Event::HardDrop);
+
+                // if !event.repeat() {
+                //     game_info.borrow_mut().hard_drop();
+                // }
             } // spacebar
             keycode::SHIFT => {
-                if !event.repeat() {
-                    game_info.borrow_mut().hold();
-                }
+                event_queue.borrow_mut().push_back(Event::Hold);
+
+                // if !event.repeat() {
+                //     game_info.borrow_mut().hold();
+                // }
             } // shift
             _ => {}
         }
@@ -159,18 +178,24 @@ pub fn game_box() -> Html {
 
     keydown.forget();
 
-    let game_info = Rc::clone(&_game_info);
+    let event_queue = Rc::clone(&_event_queue);
 
     let keyup = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                game_info.borrow_mut().on_left_move = None;
+                event_queue.borrow_mut().push_back(Event::LeftMoveStop);
+
+                //game_info.borrow_mut().on_left_move = None;
             } // left move
             keycode::RIGHT => {
-                game_info.borrow_mut().on_right_move = None;
+                event_queue.borrow_mut().push_back(Event::RightMoveStop);
+
+                //game_info.borrow_mut().on_right_move = None;
             } // right move
             keycode::DOWN => {
-                game_info.borrow_mut().on_down_move = None;
+                // event_queue.borrow_mut().push_back(Event::LeftMoveStop);
+
+                // game_info.borrow_mut().on_down_move = None;
             } // down move
             _ => {}
         }
@@ -185,14 +210,14 @@ pub fn game_box() -> Html {
     // 최초 렌더링시 호출
     use_effect_with_deps(
         move |_| {
-            GameManager::empty_render();
+            GameRenderer::empty_render();
             || ()
         },
         (),
     );
 
     html! {
-        <article id="gamebox" tabindex="0" class="flex justify-center">
+        <article id="game_ui" tabindex="0" class="flex justify-center">
             <aside class="flex flex-col m-5 justify-between">
                 <dl class="mb-[10px] side-canvas">
                     <dt class="font-mono text-2xl text-center">{"Hold"}</dt>

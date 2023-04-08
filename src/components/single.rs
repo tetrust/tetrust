@@ -1,4 +1,4 @@
-use crate::components::gamebox;
+use crate::components::game_ui;
 
 use yew::{function_component, html, Html};
 
@@ -6,7 +6,7 @@ use yew::{function_component, html, Html};
 pub fn single() -> Html {
     html! {
         <div>
-            <gamebox::GameBox/>
+            <game_ui::GameUI/>
         </div>
     }
 }
