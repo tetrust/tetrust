@@ -155,6 +155,7 @@ pub fn game_ui() -> Html {
                 // }
             } // a
             keycode::SPACE => {
+                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
                 event_queue.borrow_mut().push_back(Event::HardDrop);
 
                 // if !event.repeat() {
