@@ -6,6 +6,8 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback, Html};
+use std::collections::HashMap;
+use core::cell::RefCell;
 
 use crate::components::scorebox::ScoreBox;
 use crate::constants::keycode;
@@ -61,12 +63,19 @@ pub fn game_ui() -> Html {
 
     let event_queue = Rc::clone(&_event_queue);
 
+    let _key_states_rc = Rc::new(RefCell::new(HashMap::new()));
+    let key_states_rc_clone = Rc::clone(&_key_states_rc);
+
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                event_queue.borrow_mut().push_back(Event::LeftMove);
+                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
+                if !event.repeat() {
+                    key_states_rc_clone.borrow_mut().insert("left", true);
+                    event_queue.borrow_mut().push_back(Event::LeftMove);
+                }
 
-                // if !event.repeat() {
+                // 
                 //     game_info.borrow_mut().on_right_move = None;
                 //     game_info.borrow_mut().left_move();
 
@@ -86,6 +95,7 @@ pub fn game_ui() -> Html {
                 // }
             } // left move
             keycode::RIGHT => {
+                key_states_rc_clone.borrow_mut().insert("right", true);
                 event_queue.borrow_mut().push_back(Event::RightMove);
 
                 // if !event.repeat() {
@@ -108,6 +118,7 @@ pub fn game_ui() -> Html {
                 // }
             } // right move
             keycode::DOWN => {
+                key_states_rc_clone.borrow_mut().insert("down", true);
                 event_queue.borrow_mut().push_back(Event::SoftDrop);
 
                 // if !event.repeat() {
@@ -180,20 +191,24 @@ pub fn game_ui() -> Html {
     keydown.forget();
 
     let event_queue = Rc::clone(&_event_queue);
+    let key_states_rc_clone = Rc::clone(&_key_states_rc);
 
     let keyup = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
+                key_states_rc_clone.borrow_mut().remove("left");
                 event_queue.borrow_mut().push_back(Event::LeftMoveStop);
 
                 //game_info.borrow_mut().on_left_move = None;
             } // left move
             keycode::RIGHT => {
+                key_states_rc_clone.borrow_mut().remove("right");
                 event_queue.borrow_mut().push_back(Event::RightMoveStop);
 
                 //game_info.borrow_mut().on_right_move = None;
             } // right move
             keycode::DOWN => {
+                key_states_rc_clone.borrow_mut().remove("down");
                 // event_queue.borrow_mut().push_back(Event::LeftMoveStop);
 
                 // game_info.borrow_mut().on_down_move = None;
