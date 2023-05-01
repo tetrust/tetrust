@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::rc::Rc;
 
 use log::info;
@@ -12,13 +11,13 @@ use crate::constants::keycode;
 use crate::game::renderer::GameRenderer;
 use crate::game::{Event, GameMode, GameState};
 use crate::js_bind::document::document;
-use crate::types::key_state::KeyState;
 
 #[function_component(GameUI)]
 pub fn game_ui() -> Html {
     let game_renderer = GameRenderer::new();
 
     let _event_queue = Rc::clone(&game_renderer.event_queue);
+    let _key_states = Rc::clone(&game_renderer.key_states);
 
     let _game_info = Rc::clone(&game_renderer.game_info);
     let game_info1 = Rc::clone(&game_renderer.game_info);
@@ -61,8 +60,6 @@ pub fn game_ui() -> Html {
     };
 
     let event_queue = Rc::clone(&_event_queue);
-
-    let _key_states = Rc::new(RefCell::new(KeyState::default()));
     let key_states = Rc::clone(&_key_states);
 
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
@@ -73,111 +70,30 @@ pub fn game_ui() -> Html {
                     key_states.borrow_mut().set_left(true);
                     event_queue.borrow_mut().push_back(Event::LeftMove);
                 }
-
-                //
-                //     game_info.borrow_mut().on_right_move = None;
-                //     game_info.borrow_mut().left_move();
-
-                //     let _game_info = Rc::clone(&game_info);
-                //     let game_info = Rc::clone(&_game_info);
-
-                //     Timeout::new(das, move || {
-                //         if game_info.borrow().on_left_move.is_some() {
-                //             game_info.borrow_mut().left_move_end();
-                //         }
-                //     })
-                //     .forget();
-
-                //     let game_info = Rc::clone(&_game_info);
-
-                //     game_info.borrow_mut().on_left_move = Some(instant::Instant::now());
-                // }
             } // left move
             keycode::RIGHT => {
                 key_states.borrow_mut().set_right(true);
                 event_queue.borrow_mut().push_back(Event::RightMove);
-
-                // if !event.repeat() {
-                //     game_info.borrow_mut().on_right_move = None;
-                //     game_info.borrow_mut().right_move();
-
-                //     let _game_info = Rc::clone(&game_info);
-                //     let game_info = Rc::clone(&_game_info);
-
-                //     Timeout::new(das, move || {
-                //         if game_info.borrow().on_right_move.is_some() {
-                //             game_info.borrow_mut().right_move_end();
-                //         }
-                //     })
-                //     .forget();
-
-                //     let game_info = Rc::clone(&_game_info);
-
-                //     game_info.borrow_mut().on_right_move = Some(instant::Instant::now());
-                // }
             } // right move
             keycode::DOWN => {
                 key_states.borrow_mut().set_down(true);
                 event_queue.borrow_mut().push_back(Event::SoftDrop);
-
-                // if !event.repeat() {
-                //     if game_info.borrow().sdf_is_infinity {
-                //         game_info.borrow_mut().down_move_end();
-                //     } else {
-                //         game_info.borrow_mut().on_down_move = None;
-                //         game_info.borrow_mut().soft_drop();
-
-                //         let _game_info = Rc::clone(&game_info);
-                //         let game_info = Rc::clone(&_game_info);
-
-                //         Timeout::new(das, move || {
-                //             if game_info.borrow().on_down_move.is_some() {
-                //                 game_info.borrow_mut().down_move_end();
-                //             }
-                //         })
-                //         .forget();
-
-                //         let game_info = Rc::clone(&_game_info);
-
-                //         game_info.borrow_mut().on_down_move = Some(instant::Instant::now());
-                //     }
-                // }
             } // down move
             keycode::Z => {
                 event_queue.borrow_mut().push_back(Event::LeftRotate);
-
-                // if !event.repeat() {
-                //     game_info.borrow_mut().left_rotate();
-                // }
             } // z
             keycode::X => {
                 event_queue.borrow_mut().push_back(Event::RightRotate);
-
-                // if !event.repeat() {
-                //     game_info.borrow_mut().right_rotate();
-                // }
             } // x
             keycode::A => {
                 event_queue.borrow_mut().push_back(Event::DoubleRotate);
-
-                // if !event.repeat() {
-                //     game_info.borrow_mut().double_rotate();
-                // }
             } // a
             keycode::SPACE => {
                 event.prevent_default(); // Prevent scrolling down by hitting the spacebar
                 event_queue.borrow_mut().push_back(Event::HardDrop);
-
-                // if !event.repeat() {
-                //     game_info.borrow_mut().hard_drop();
-                // }
             } // spacebar
             keycode::SHIFT => {
                 event_queue.borrow_mut().push_back(Event::Hold);
-
-                // if !event.repeat() {
-                //     game_info.borrow_mut().hold();
-                // }
             } // shift
             _ => {}
         }
@@ -197,20 +113,13 @@ pub fn game_ui() -> Html {
             keycode::LEFT => {
                 key_states.borrow_mut().set_left(true);
                 event_queue.borrow_mut().push_back(Event::LeftMoveStop);
-
-                //game_info.borrow_mut().on_left_move = None;
             } // left move
             keycode::RIGHT => {
                 key_states.borrow_mut().set_right(true);
                 event_queue.borrow_mut().push_back(Event::RightMoveStop);
-
-                //game_info.borrow_mut().on_right_move = None;
             } // right move
             keycode::DOWN => {
                 key_states.borrow_mut().set_down(true);
-                // event_queue.borrow_mut().push_back(Event::LeftMoveStop);
-
-                // game_info.borrow_mut().on_down_move = None;
             } // down move
             _ => {}
         }

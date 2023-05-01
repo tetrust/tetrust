@@ -15,6 +15,7 @@ use crate::game::Event;
 use crate::js_bind::request_animation_frame::request_animation_frame;
 use crate::js_bind::write_text::write_text;
 use crate::options::game_option::GameOption;
+use crate::types::key_state::KeyState;
 use crate::wasm_bind;
 
 use super::GameState;
@@ -22,6 +23,7 @@ use super::GameState;
 pub struct GameRenderer {
     pub game_info: Rc<RefCell<GameInfo>>,
     pub event_queue: Rc<RefCell<VecDeque<Event>>>,
+    pub key_states: Rc<RefCell<KeyState>>,
 }
 
 impl GameRenderer {
@@ -57,9 +59,12 @@ impl GameRenderer {
 
         let event_queue = Rc::new(RefCell::new(VecDeque::new()));
 
+        let key_states = Rc::new(RefCell::new(KeyState::new()));
+
         Self {
             game_info,
             event_queue,
+            key_states,
         }
     }
 
