@@ -9,7 +9,7 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::constants::character::SPECIAL_SPACE;
-use crate::constants::time::GRAVITY_DROP_INTERVAL;
+use crate::constants::time::{EVENT_HANDLING_INTERVAL, GRAVITY_DROP_INTERVAL};
 use crate::game::game_info::GameInfo;
 use crate::game::Event;
 use crate::js_bind::request_animation_frame::request_animation_frame;
@@ -88,8 +88,6 @@ impl GameRenderer {
 
         let _game_info = Rc::clone(&self.game_info);
         let game_info = Rc::clone(&_game_info);
-        let event_queue = Rc::clone(&self.event_queue);
-        let _key_states = Rc::clone(&self.key_states);
 
         let mut former_lock_delay_count: u8 = 0;
 
@@ -98,8 +96,7 @@ impl GameRenderer {
             // 마지막으로 중력 처리한 시점
             let mut last_tick_point = instant::Instant::now();
 
-            let mut left_keydown_time: Option<instant::Instant> = None;
-            let mut right_keydown_time: Option<instant::Instant> = None;
+            let _game_info = Rc::clone(&game_info);
 
             let mut future_list = IntervalStream::new(GRAVITY_DROP_INTERVAL).map(move |_| {
                 // 락 딜레이 처리
@@ -130,7 +127,29 @@ impl GameRenderer {
                     last_tick_point = instant::Instant::now();
                     game_info.borrow_mut().gravity_drop();
                 }
+            });
 
+            let game_info = Rc::clone(&_game_info);
+            loop {
+                if game_info.borrow_mut().game_state == GameState::PLAYING {
+                    let next = future_list.next();
+                    next.await;
+                } else {
+                    break;
+                }
+            }
+        });
+
+        let game_info = Rc::clone(&_game_info);
+        let event_queue = Rc::clone(&self.event_queue);
+        let _key_states = Rc::clone(&self.key_states);
+
+        // 이벤트 핸들링 스레드
+        spawn_local(async move {
+            let mut left_keydown_time: Option<instant::Instant> = None;
+            let mut right_keydown_time: Option<instant::Instant> = None;
+
+            let mut future_list = IntervalStream::new(EVENT_HANDLING_INTERVAL).map(move |_| {
                 // TODO: das에 arr 적용 필요
                 // 일단은 전부 arr 0으로 가정해서 구현했는데,
                 // arr 0가 아닐때는 move_end가 아니라 arr 시간이 지날때마다 한칸씩 이동하게 해야할듯
