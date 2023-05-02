@@ -72,12 +72,18 @@ pub fn game_ui() -> Html {
                 }
             } // left move
             keycode::RIGHT => {
-                key_states.borrow_mut().set_right(true);
-                event_queue.borrow_mut().push_back(Event::RightMove);
-            } // right move
+                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
+                if !event.repeat() {
+                    key_states.borrow_mut().set_right(true);
+                    event_queue.borrow_mut().push_back(Event::RightMove);
+                }
+        } // right move
             keycode::DOWN => {
-                key_states.borrow_mut().set_down(true);
-                event_queue.borrow_mut().push_back(Event::SoftDrop);
+                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
+                if !event.repeat() {
+                    key_states.borrow_mut().set_down(true);
+                    event_queue.borrow_mut().push_back(Event::SoftDrop);
+                }
             } // down move
             keycode::Z => {
                 event_queue.borrow_mut().push_back(Event::LeftRotate);
