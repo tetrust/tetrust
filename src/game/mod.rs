@@ -13,8 +13,8 @@ pub use game_info::*;
 pub mod game_record;
 pub use game_record::*;
 
-pub mod manager;
-pub use manager::*;
+pub mod renderer;
+pub use renderer::*;
 
 pub mod point;
 pub use point::*;
