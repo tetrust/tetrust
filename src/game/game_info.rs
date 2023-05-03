@@ -144,9 +144,6 @@ impl GameInfo {
             on_left_move: None,
             on_right_move: None,
             on_down_move: None,
-            // closure: Closure::<Box<dyn FnMut() + 'static>>::new(Box::new(|| {
-            //     log::info!("ㅅㅅㅅㅅ");
-            // })),
         }
     }
 
