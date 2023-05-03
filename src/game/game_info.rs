@@ -208,7 +208,7 @@ impl GameInfo {
         }
 
         //NOTE: Garbage Line Queue 채우기
-        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
+        if random() > 0.5 && self.game_mode == GameMode::CHEESE {
             //FIXME: GameMode::NORMAL이 아니라 Option값이 Garbage_On을 읽도록
             let hole_loc = floor(random() * self.board.column_count as f64) as usize;
             let rand_garbage_height = floor(random() * 3 as f64) as usize;
