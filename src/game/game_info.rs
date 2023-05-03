@@ -25,6 +25,7 @@ pub enum GameState {
 #[derive(Debug, PartialEq, Eq)]
 pub enum GameMode {
     NORMAL,
+    CHEESE,
     SPRINT,
 }
 
