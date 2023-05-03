@@ -65,21 +65,21 @@ pub fn game_ui() -> Html {
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
+                event.prevent_default(); 
                 if !event.repeat() {
                     key_states.borrow_mut().set_left(true);
                     event_queue.borrow_mut().push_back(Event::LeftMove);
                 }
             } // left move
             keycode::RIGHT => {
-                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
+                event.prevent_default(); 
                 if !event.repeat() {
                     key_states.borrow_mut().set_right(true);
                     event_queue.borrow_mut().push_back(Event::RightMove);
                 }
         } // right move
             keycode::DOWN => {
-                event.prevent_default(); // Prevent scrolling down by hitting the spacebar
+                event.prevent_default(); // Prevent scrolling down by hitting the down key
                 if !event.repeat() {
                     key_states.borrow_mut().set_down(true);
                     event_queue.borrow_mut().push_back(Event::SoftDrop);
