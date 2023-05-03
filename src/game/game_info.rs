@@ -24,9 +24,9 @@ pub enum GameState {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum GameMode {
-    NORMAL,
-    CHEESE,
-    SPRINT,
+    NORMAL, // 일반 자유 모드
+    CHEESE, // 치즈레이스 모드 (가비지 올라옴)
+    SPRINT, // 40줄 스프린트 모드
 }
 
 #[derive(Debug)]
