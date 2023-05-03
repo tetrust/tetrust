@@ -20,8 +20,6 @@ pub fn game_ui() -> Html {
     let _key_states = Rc::clone(&game_renderer.key_states);
 
     let _game_info = Rc::clone(&game_renderer.game_info);
-    let game_info1 = Rc::clone(&game_renderer.game_info);
-    let game_info2 = Rc::clone(&game_renderer.game_info);
 
     let _das = _game_info.borrow().das.clone();
 
@@ -39,9 +37,10 @@ pub fn game_ui() -> Html {
         })
     };
 
+    let game_info = Rc::clone(&_game_info);
     let to_normal_mode = {
         Callback::from(move |_: _| {
-            let mut game_info = game_info1.borrow_mut();
+            let mut game_info = game_info.borrow_mut();
             if game_info.game_state != GameState::PLAYING {
                 info!("Switching to normal mode");
                 game_info.game_mode = GameMode::NORMAL;
@@ -49,12 +48,24 @@ pub fn game_ui() -> Html {
         })
     };
 
+    let game_info = Rc::clone(&_game_info);
     let to_sprint_mode = {
         Callback::from(move |_| {
-            let mut game_info = game_info2.borrow_mut();
+            let mut game_info = game_info.borrow_mut();
             if game_info.game_state != GameState::PLAYING {
                 info!("Switching to sprint mode");
                 game_info.game_mode = GameMode::SPRINT;
+            }
+        })
+    };
+
+    let game_info = Rc::clone(&_game_info);
+    let to_cheese_mode = {
+        Callback::from(move |_| {
+            let mut game_info = game_info.borrow_mut();
+            if game_info.game_state != GameState::PLAYING {
+                info!("Switching to sprint mode");
+                game_info.game_mode = GameMode::CHEESE;
             }
         })
     };
@@ -77,7 +88,7 @@ pub fn game_ui() -> Html {
                     key_states.borrow_mut().set_right(true);
                     event_queue.borrow_mut().push_back(Event::RightMove);
                 }
-        } // right move
+            } // right move
             keycode::DOWN => {
                 event.prevent_default(); // Prevent scrolling down by hitting the spacebar
                 if !event.repeat() {
@@ -188,6 +199,13 @@ pub fn game_ui() -> Html {
                     />
                     <label for="normal">{"Sprint(40 Lines)"}</label>
                 </div>
+                <div>
+                <input
+                    type="radio" id="cheese" name="mode"
+                    onclick={to_cheese_mode}
+                />
+                <label for="normal">{"Cheese race)"}</label>
+            </div>
             </aside>
             <dl class="mt-[20px] mr-[10px] side-canvas">
                 <dd><canvas id="garbage-gauge-canvas" class="" width="30" height="600"></canvas></dd>

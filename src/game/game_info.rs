@@ -24,8 +24,9 @@ pub enum GameState {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum GameMode {
-    NORMAL,
-    SPRINT,
+    NORMAL, // 일반 자유 모드
+    CHEESE, // 치즈레이스 모드 (가비지 올라옴)
+    SPRINT, // 40줄 스프린트 모드
 }
 
 #[derive(Debug)]
@@ -143,9 +144,6 @@ impl GameInfo {
             on_left_move: None,
             on_right_move: None,
             on_down_move: None,
-            // closure: Closure::<Box<dyn FnMut() + 'static>>::new(Box::new(|| {
-            //     log::info!("ㅅㅅㅅㅅ");
-            // })),
         }
     }
 
@@ -210,7 +208,7 @@ impl GameInfo {
         }
 
         //NOTE: Garbage Line Queue 채우기
-        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
+        if random() > 0.5 && self.game_mode == GameMode::CHEESE {
             //FIXME: GameMode::NORMAL이 아니라 Option값이 Garbage_On을 읽도록
             let hole_loc = floor(random() * self.board.column_count as f64) as usize;
             let rand_garbage_height = floor(random() * 3 as f64) as usize;
