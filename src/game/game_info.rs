@@ -443,8 +443,9 @@ impl GameInfo {
     fn fix_current_block(&mut self) {
         if let Some(current_block) = self.current_block {
             // 블럭 고정 후 현재 블럭에서 제거
-            self.board
-                .write_current_block(current_block.cells, self.current_position);
+            if self.board.write_current_block(current_block.cells, self.current_position) {
+                self.game_over();
+            }
             self.current_block = None;
             self.lock_delay_count = 0;
             self.hold_used = false;
