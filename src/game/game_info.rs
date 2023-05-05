@@ -24,8 +24,9 @@ pub enum GameState {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum GameMode {
-    NORMAL,
-    SPRINT,
+    NORMAL, // 일반 자유 모드
+    CHEESE, // 치즈레이스 모드 (가비지 올라옴)
+    SPRINT, // 40줄 스프린트 모드
 }
 
 #[derive(Debug)]
@@ -143,9 +144,6 @@ impl GameInfo {
             on_left_move: None,
             on_right_move: None,
             on_down_move: None,
-            // closure: Closure::<Box<dyn FnMut() + 'static>>::new(Box::new(|| {
-            //     log::info!("ㅅㅅㅅㅅ");
-            // })),
         }
     }
 
@@ -210,7 +208,7 @@ impl GameInfo {
         }
 
         //NOTE: Garbage Line Queue 채우기
-        if random() > 0.5 && self.game_mode == GameMode::NORMAL {
+        if random() > 0.5 && self.game_mode == GameMode::CHEESE {
             //FIXME: GameMode::NORMAL이 아니라 Option값이 Garbage_On을 읽도록
             let hole_loc = floor(random() * self.board.column_count as f64) as usize;
             let rand_garbage_height = floor(random() * 3 as f64) as usize;
@@ -445,8 +443,9 @@ impl GameInfo {
     fn fix_current_block(&mut self) {
         if let Some(current_block) = self.current_block {
             // 블럭 고정 후 현재 블럭에서 제거
-            self.board
-                .write_current_block(current_block.cells, self.current_position);
+            if self.board.write_current_block(current_block.cells, self.current_position) {
+                self.game_over();
+            }
             self.current_block = None;
             self.lock_delay_count = 0;
             self.hold_used = false;
@@ -505,7 +504,7 @@ impl GameInfo {
         // Handle 40-line sprint finish condition
         // FIXME: Parametrizaiton (i.e., instead of hard-coding 40)
         // FIXME: Recude delay. Maybe we can check # erased lines in clear_line
-        if self.game_mode == GameMode::SPRINT && self.record.line_clear_count > 40 {
+        if self.game_mode == GameMode::SPRINT && self.record.line_clear_count >= 40 {
             /* FIXME: call something like `clear` instead of `game_over` */
             self.game_over();
         }

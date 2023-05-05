@@ -48,9 +48,11 @@ impl Board {
         }
     }
 
-    pub fn write_current_block(&mut self, block: BlockShapeCells, position: Point) {
+    pub fn write_current_block(&mut self, block: BlockShapeCells, position: Point) -> bool {
         let x = position.x;
         let y = position.y;
+
+        let mut is_game_over = false;
 
         let mut block_x = 0;
 
@@ -71,9 +73,15 @@ impl Board {
                         if let Cell::Empty = cell {
                             // No Conflict
                             self.cells[y][x] = block[block_y][block_x];
+                            if y > self.row_count as usize {
+                                is_game_over = true;
+                            }
                         } else if let Cell::Ghost = cell {
                             // No Conflict
                             self.cells[y][x] = block[block_y][block_x];
+                            if y > self.row_count as usize{
+                                is_game_over = true;
+                            }
                         } else if let Cell::Empty = block[block_y][block_x] {
                             // No Conflict
                         } else if let Cell::Ghost = block[block_y][block_x] {
@@ -91,5 +99,6 @@ impl Board {
 
             block_x += 1;
         }
+        return is_game_over
     }
 }
