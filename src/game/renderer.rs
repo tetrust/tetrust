@@ -11,7 +11,7 @@ use wasm_bindgen_futures::spawn_local;
 use crate::constants::character::SPECIAL_SPACE;
 use crate::constants::time::{EVENT_HANDLING_INTERVAL, GRAVITY_DROP_INTERVAL};
 use crate::game::game_info::GameInfo;
-use crate::game::{self, Event};
+use crate::game::Event;
 use crate::js_bind::request_animation_frame::request_animation_frame;
 use crate::js_bind::write_text::write_text;
 use crate::options::game_option::GameOption;

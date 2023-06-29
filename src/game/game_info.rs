@@ -497,6 +497,14 @@ impl GameInfo {
                 let block = self.get_block();
                 self.current_block = Some(block);
 
+                if self.das_charging_status.left {
+                    self.left_move_end();
+                }
+
+                if self.das_charging_status.right {
+                    self.right_move_end();
+                }
+
                 let point = Point::start_point(self.board.column_count);
                 self.current_position = point;
 
