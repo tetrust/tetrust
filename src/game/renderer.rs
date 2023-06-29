@@ -162,6 +162,10 @@ impl GameRenderer {
                         Event::LeftMove => {
                             game_info.borrow_mut().left_move();
                             left_keydown_time = Some(instant::Instant::now());
+
+                            if game_info.borrow_mut().das_charging_status.is_right() {
+                                game_info.borrow_mut().das_charging_status.set_none();
+                            }
                         }
                         Event::LeftMoveStop => {
                             left_keydown_time = None;
@@ -170,6 +174,10 @@ impl GameRenderer {
                         Event::RightMove => {
                             game_info.borrow_mut().right_move();
                             right_keydown_time = Some(instant::Instant::now());
+
+                            if game_info.borrow_mut().das_charging_status.is_left() {
+                                game_info.borrow_mut().das_charging_status.set_none();
+                            }
                         }
                         Event::RightMoveStop => {
                             right_keydown_time = None;
