@@ -75,6 +75,8 @@ pub struct GameInfo {
     pub das: u32, // DAS: Delayed Auto Shift의 약자. Key를 Holding하여 Auto Shift가 시작되기까지의 시간, ms단위
     pub arr: u32, // ARR: Auto Repeat Rate: Auto Shift가 활성화되었을 때 이동이 반복되는 사이클타임, ms단위
 
+    pub das_charging: bool, // DAS가 충전중인지 여부
+
     pub on_left_move: Option<Instant>,  // left move 클릭한 시작시간
     pub on_right_move: Option<Instant>, // right move 클릭한 시작시간
     pub on_down_move: Option<Instant>,  // down move 클릭한 시작시간
