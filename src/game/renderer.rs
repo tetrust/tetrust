@@ -11,7 +11,7 @@ use wasm_bindgen_futures::spawn_local;
 use crate::constants::character::SPECIAL_SPACE;
 use crate::constants::time::{EVENT_HANDLING_INTERVAL, GRAVITY_DROP_INTERVAL};
 use crate::game::game_info::GameInfo;
-use crate::game::Event;
+use crate::game::{self, Event};
 use crate::js_bind::request_animation_frame::request_animation_frame;
 use crate::js_bind::write_text::write_text;
 use crate::options::game_option::GameOption;
@@ -165,6 +165,7 @@ impl GameRenderer {
                         }
                         Event::LeftMoveStop => {
                             left_keydown_time = None;
+                            game_info.borrow_mut().das_charging_status.left = false;
                         }
                         Event::RightMove => {
                             game_info.borrow_mut().right_move();
@@ -172,6 +173,7 @@ impl GameRenderer {
                         }
                         Event::RightMoveStop => {
                             right_keydown_time = None;
+                            game_info.borrow_mut().das_charging_status.right = false;
                         }
                         Event::LeftRotate => {
                             game_info.borrow_mut().left_rotate();
@@ -201,6 +203,7 @@ impl GameRenderer {
                     if elapsed_time >= game_info.borrow().das as u128 {
                         game_info.borrow_mut().left_move_end();
                         left_keydown_time = None;
+                        game_info.borrow_mut().das_charging_status.left = true;
                     }
                 }
 
@@ -211,6 +214,7 @@ impl GameRenderer {
                     if elapsed_time >= game_info.borrow().das as u128 {
                         game_info.borrow_mut().right_move_end();
                         right_keydown_time = None;
+                        game_info.borrow_mut().das_charging_status.right = true;
                     }
                 }
             });
