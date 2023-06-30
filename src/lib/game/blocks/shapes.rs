@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::game::cell::Cell;
+use crate::lib::game::cell::Cell;
 
 use super::colors::{
     I_DEFAULT_COLOR, J_DEFAULT_COLOR, L_DEFAULT_COLOR, O_DEFAULT_COLOR, S_DEFAULT_COLOR,

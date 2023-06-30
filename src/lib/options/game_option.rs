@@ -1,4 +1,4 @@
-use crate::game::bag::BagType;
+use crate::lib::game::bag::BagType;
 
 pub struct GameOption {
     pub board_width: u32,

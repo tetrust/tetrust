@@ -1,4 +1,4 @@
-use crate::game::Cell;
+use crate::lib::game::Cell;
 
 pub type BlockColor = Cell;
 

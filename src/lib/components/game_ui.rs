@@ -6,11 +6,11 @@ use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback, Html};
 
-use crate::components::scorebox::ScoreBox;
-use crate::constants::keycode;
-use crate::game::renderer::GameRenderer;
-use crate::game::{Event, GameMode, GameState};
-use crate::js_bind::document::document;
+use crate::lib::components::scorebox::ScoreBox;
+use crate::lib::constants::keycode;
+use crate::lib::game::renderer::GameRenderer;
+use crate::lib::game::{Event, GameMode, GameState};
+use crate::lib::js_bind::document::document;
 
 #[function_component(GameUI)]
 pub fn game_ui() -> Html {
@@ -76,14 +76,14 @@ pub fn game_ui() -> Html {
     let keydown = Closure::wrap(Box::new(move |event: KeyboardEvent| {
         match event.key_code() {
             keycode::LEFT => {
-                event.prevent_default(); 
+                event.prevent_default();
                 if !event.repeat() {
                     key_states.borrow_mut().set_left(true);
                     event_queue.borrow_mut().push_back(Event::LeftMove);
                 }
             } // left move
             keycode::RIGHT => {
-                event.prevent_default(); 
+                event.prevent_default();
                 if !event.repeat() {
                     key_states.borrow_mut().set_right(true);
                     event_queue.borrow_mut().push_back(Event::RightMove);

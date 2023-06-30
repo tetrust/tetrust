@@ -1,8 +1,4 @@
-use yew::prelude::*;
 use yew_router::prelude::*;
-
-use crate::components::multi::MultiPlay;
-use crate::components::single::SinglePlay;
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -23,5 +19,18 @@ pub fn switch(routes: Route) -> Html {
         Route::SinglePlay => html! { <SinglePlay/> },
         Route::MultiPlay => html! { <MultiPlay/> },
         Route::NotFound => html! { <Redirect<Route> to={Route::Home}/> },
+    }
+}
+
+use yew::{function_component, html, Html};
+
+use super::{multi::MultiPlay, setting::SinglePlay};
+
+#[function_component(MainRouterComponent)]
+pub fn main_router() -> Html {
+    html! {
+        <BrowserRouter>
+            <Switch<Route> render={switch} />
+        </BrowserRouter>
     }
 }

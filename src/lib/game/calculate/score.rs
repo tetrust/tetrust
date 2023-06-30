@@ -1,4 +1,4 @@
-use crate::game::SpinType;
+use crate::lib::game::SpinType;
 
 pub fn calculate_score(
     line: u8,

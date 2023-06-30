@@ -1,14 +1,11 @@
-pub mod bot;
-pub mod components;
-pub mod constants;
-pub mod game;
-pub mod js_bind;
-pub mod options;
-pub mod types;
-pub mod util;
-pub mod wasm_bind;
+#![allow(special_module_name)]
+
+use lib::components;
+
+pub mod lib;
+pub mod pages;
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    yew::Renderer::<components::main::MainComponent>::new().render();
+    yew::Renderer::<pages::router::MainRouterComponent>::new().render();
 }
