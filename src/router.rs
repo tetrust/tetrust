@@ -1,7 +1,7 @@
 use yew::{function_component, html, Html};
 use yew_router::prelude::*;
 
-use crate::pages::{multi::MultiPlay, single::SinglePlay};
+use crate::pages::{multi::MultiPlay, setting::SettingPage, single::SinglePlay};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -11,6 +11,8 @@ pub enum Route {
     SinglePlay,
     #[at("/multi")]
     MultiPlay,
+    #[at("/setting")]
+    Setting,
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -21,6 +23,9 @@ pub fn switch(routes: Route) -> Html {
         Route::Home => html! { <Redirect<Route> to={Route::SinglePlay}/> },
         Route::SinglePlay => html! { <SinglePlay/> },
         Route::MultiPlay => html! { <MultiPlay/> },
+        Route::Setting => {
+            html! { <SettingPage/> }
+        }
         Route::NotFound => html! { <Redirect<Route> to={Route::Home}/> },
     }
 }
