@@ -13,7 +13,7 @@ use crate::js_bind::write_text::write_text;
 use crate::options::game_option::GameOption;
 use crate::util::{random, rotate_left, rotate_right, KICK_INDEX_3BY3, KICK_INDEX_I};
 
-use super::{calculate_score, Block};
+use super::{calculate_score, Block, DasChargingStatus};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum GameState {
@@ -74,6 +74,8 @@ pub struct GameInfo {
     pub sdf_is_infinity: bool, // 소프트드랍시 바로 바닥에 닿도록 함
     pub das: u32, // DAS: Delayed Auto Shift의 약자. Key를 Holding하여 Auto Shift가 시작되기까지의 시간, ms단위
     pub arr: u32, // ARR: Auto Repeat Rate: Auto Shift가 활성화되었을 때 이동이 반복되는 사이클타임, ms단위
+
+    pub das_charging_status: DasChargingStatus, // DAS 차징 상태
 
     pub on_left_move: Option<Instant>,  // left move 클릭한 시작시간
     pub on_right_move: Option<Instant>, // right move 클릭한 시작시간
@@ -144,6 +146,7 @@ impl GameInfo {
             on_left_move: None,
             on_right_move: None,
             on_down_move: None,
+            das_charging_status: Default::default(),
         }
     }
 
@@ -443,7 +446,10 @@ impl GameInfo {
     fn fix_current_block(&mut self) {
         if let Some(current_block) = self.current_block {
             // 블럭 고정 후 현재 블럭에서 제거
-            if self.board.write_current_block(current_block.cells, self.current_position) {
+            if self
+                .board
+                .write_current_block(current_block.cells, self.current_position)
+            {
                 self.game_over();
             }
             self.current_block = None;
@@ -493,6 +499,16 @@ impl GameInfo {
 
                 let point = Point::start_point(self.board.column_count);
                 self.current_position = point;
+
+                match self.das_charging_status {
+                    DasChargingStatus::Left => {
+                        self.left_move_end();
+                    }
+                    DasChargingStatus::Right => {
+                        self.right_move_end();
+                    }
+                    _ => {}
+                }
 
                 if !valid_block(&self.board, &block.cells, point) {
                     // 패배 처리
