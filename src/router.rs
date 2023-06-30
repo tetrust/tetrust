@@ -1,4 +1,7 @@
+use yew::{function_component, html, Html};
 use yew_router::prelude::*;
+
+use crate::pages::{multi::MultiPlay, single::SinglePlay};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -21,10 +24,6 @@ pub fn switch(routes: Route) -> Html {
         Route::NotFound => html! { <Redirect<Route> to={Route::Home}/> },
     }
 }
-
-use yew::{function_component, html, Html};
-
-use super::{multi::MultiPlay, setting::SinglePlay};
 
 #[function_component(MainRouterComponent)]
 pub fn main_router() -> Html {
