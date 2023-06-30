@@ -2,18 +2,11 @@ use wasm_bindgen::{JsCast, UnwrapThrowExt};
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, use_state, Callback, Html, InputEvent};
 
-use crate::lib::js_bind::localstorage::{get_local_value, set_local_value};
+use crate::lib::game::local_manager;
 
 #[function_component(ArrInput)]
 pub fn arr() -> Html {
-    if let None = get_local_value("arr") {
-        set_local_value("arr", 0.to_string());
-    }
-
-    let arr_value = get_local_value("arr")
-        .map(|v| v.parse::<u32>().ok())
-        .flatten()
-        .unwrap_or(0);
+    let arr_value = local_manager::get_arr_or_set_default();
 
     let arr_state = use_state(|| arr_value);
 
@@ -27,7 +20,7 @@ pub fn arr() -> Html {
             .unwrap_throw();
 
         let value = target.value();
-        set_local_value("arr", value.clone());
+        local_manager::set_arr(value.parse::<u32>().unwrap());
 
         let _ = move |_: HtmlInputElement| name.set(value.parse::<u32>().unwrap());
     });

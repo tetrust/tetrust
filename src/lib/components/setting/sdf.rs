@@ -2,24 +2,17 @@ use wasm_bindgen::{JsCast, UnwrapThrowExt};
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, use_state, Callback, Html, InputEvent};
 
-use crate::lib::constants::setting::INFINITY;
-use crate::lib::js_bind::localstorage::{get_local_value, set_local_value};
+use crate::lib::game::local_manager;
+use crate::lib::game::sdf::sdf_value::SdfValue;
 
 #[function_component(SdfInput)]
 pub fn sdf() -> Html {
-    if let None = get_local_value("sdf") {
-        set_local_value("sdf", 5.to_string());
-    }
-
-    let sdf_value = get_local_value("sdf")
-        .map(|v| v.parse::<u32>().ok())
-        .flatten()
-        .unwrap_or(5);
+    let sdf_value = local_manager::get_sdf_or_set_default();
 
     let sdf_state = use_state(|| sdf_value);
 
     let oninput = Callback::from(move |input_event: InputEvent| {
-        let name = sdf_state.clone();
+        let state = sdf_state.clone();
 
         let target: HtmlInputElement = input_event
             .target()
@@ -30,13 +23,13 @@ pub fn sdf() -> Html {
         let value = target.value();
 
         let value = match value.as_str() {
-            "41" => INFINITY.to_string(),
-            _ => value,
+            "41" => SdfValue::Infinity,
+            _ => SdfValue::Number(value.parse::<u32>().unwrap()),
         };
 
-        set_local_value("sdf", value.clone());
+        local_manager::set_sdf(value.clone());
 
-        let _ = move |_: HtmlInputElement| name.set(value.parse::<u32>().unwrap());
+        let _ = move |_: HtmlInputElement| state.set(value);
     });
 
     html! {

@@ -2,18 +2,11 @@ use wasm_bindgen::{JsCast, UnwrapThrowExt};
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, use_state, Callback, Html, InputEvent};
 
-use crate::lib::js_bind::localstorage::{get_local_value, set_local_value};
+use crate::lib::game::local_manager;
 
 #[function_component(DasInput)]
 pub fn das() -> Html {
-    if let None = get_local_value("das") {
-        set_local_value("das", "300".to_string());
-    }
-
-    let das_value = get_local_value("das")
-        .map(|v| v.parse::<u32>().ok())
-        .flatten()
-        .unwrap_or(300);
+    let das_value = local_manager::get_das_or_set_default();
 
     let das_state = use_state(|| das_value);
 
@@ -27,7 +20,7 @@ pub fn das() -> Html {
             .unwrap_throw();
 
         let value = target.value();
-        set_local_value("das", value.clone());
+        local_manager::set_das(value.parse::<u32>().unwrap());
 
         let _ = move |_: HtmlInputElement| name.set(value.parse::<u32>().unwrap());
     });
