@@ -1,3 +1,4 @@
+use crate::lib::components::setting::arr::ArrInput;
 use crate::lib::components::setting::das::DasInput;
 use yew::{function_component, html, Html};
 
@@ -9,6 +10,10 @@ pub fn setting_page() -> Html {
 
             <div>
                 <DasInput/>
+            </div>
+
+            <div>
+                <ArrInput/>
             </div>
         </div>
     }
