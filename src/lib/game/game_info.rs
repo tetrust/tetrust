@@ -13,7 +13,8 @@ use crate::lib::js_bind::write_text::write_text;
 use crate::lib::options::game_option::GameOption;
 use crate::lib::util::{random, rotate_left, rotate_right, KICK_INDEX_3BY3, KICK_INDEX_I};
 
-use super::{calculate_score, Block, DasChargingStatus};
+use super::sdf::sdf_value::SdfValue;
+use super::{calculate_score, local_manager, Block, DasChargingStatus};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum GameState {
@@ -70,8 +71,7 @@ pub struct GameInfo {
     pub lock_delay: u32,      // 바닥에 닿을때 고정하기까지의 딜레이. 밀리초 단위.
     pub lock_delay_count: u8, // 하좌우이동, 좌우회전 성공 시 록딜레이 카운트가 올라감. 틱스레드에서 변화를 읽고 start를 초기화. 8이상이면 안올라감
 
-    pub sdf: u32, // SDF: Soft Drop Factor. 소프트 드랍 Key가 눌러졌을 때 자연드랍속도를 몇배 더 빠르게할지 설정
-    pub sdf_is_infinity: bool, // 소프트드랍시 바로 바닥에 닿도록 함
+    pub sdf: SdfValue, // SDF: Soft Drop Factor. 소프트 드랍 Key가 눌러졌을 때 자연드랍속도를 몇배 더 빠르게할지 설정
     pub das: u32, // DAS: Delayed Auto Shift의 약자. Key를 Holding하여 Auto Shift가 시작되기까지의 시간, ms단위
     pub arr: u32, // ARR: Auto Repeat Rate: Auto Shift가 활성화되었을 때 이동이 반복되는 사이클타임, ms단위
 
@@ -136,10 +136,9 @@ impl GameInfo {
             message: None,
             in_spin: SpinType::None,
             lock_delay: 500,
-            das: 300, // 좌우 DAS DEFAULT VALUE
-            sdf: 300,
-            sdf_is_infinity: false,
-            arr: 0, //FIXME: 미사용
+            das: local_manager::get_das_or_set_default(), // 좌우 DAS DEFAULT VALUE
+            sdf: local_manager::get_sdf_or_set_default(), // 소프트드랍 FACTOR DEFAULT VALUE
+            arr: local_manager::get_arr_or_set_default(), // FIXME: 미사용
             start_time: Date::new_0(),
             running_time: 0,
             lock_delay_count: 0,
