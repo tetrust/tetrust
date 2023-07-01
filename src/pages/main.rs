@@ -1,7 +1,6 @@
-use crate::lib::components::setting::arr::ArrInput;
-use crate::lib::components::setting::das::DasInput;
-use crate::lib::components::setting::sdf::SdfInput;
+use crate::router::Route;
 use yew::{function_component, html, Html};
+use yew_router::prelude::*;
 
 #[function_component(MainPage)]
 pub fn main_page() -> Html {
@@ -10,15 +9,15 @@ pub fn main_page() -> Html {
             <h1>{ "Main Page" }</h1>
 
             <div>
-                <DasInput/>
+                <Link<Route> to={Route::SinglePlay}>{ "Single" }</Link<Route>>
             </div>
 
             <div>
-                <ArrInput/>
+                <Link<Route> to={Route::MultiPlay}>{ "Multi" }</Link<Route>>
             </div>
 
             <div>
-                <SdfInput/>
+                <Link<Route> to={Route::Setting}>{ "Setting" }</Link<Route>>
             </div>
         </div>
     }
