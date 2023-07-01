@@ -8,15 +8,15 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::constants::character::SPECIAL_SPACE;
-use crate::constants::time::{EVENT_HANDLING_INTERVAL, GRAVITY_DROP_INTERVAL};
-use crate::game::game_info::GameInfo;
-use crate::game::Event;
-use crate::js_bind::request_animation_frame::request_animation_frame;
-use crate::js_bind::write_text::write_text;
-use crate::options::game_option::GameOption;
-use crate::types::key_state::KeyState;
-use crate::wasm_bind;
+use crate::lib::constants::character::SPECIAL_SPACE;
+use crate::lib::constants::time::{EVENT_HANDLING_INTERVAL, GRAVITY_DROP_INTERVAL};
+use crate::lib::game::game_info::GameInfo;
+use crate::lib::game::Event;
+use crate::lib::js_bind::request_animation_frame::request_animation_frame;
+use crate::lib::js_bind::write_text::write_text;
+use crate::lib::options::game_option::GameOption;
+use crate::lib::types::key_state::KeyState;
+use crate::lib::wasm_bind;
 
 use super::GameState;
 

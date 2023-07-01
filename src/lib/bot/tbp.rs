@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::game::Block;
+use crate::lib::game::Block;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TBPInfo {

@@ -2,7 +2,7 @@
 
 use itertools::Itertools;
 
-use crate::game::{BlockShapeCells, Cell, Point};
+use crate::lib::game::{BlockShapeCells, Cell, Point};
 
 #[derive(Debug, Clone)]
 pub struct Board {
@@ -79,7 +79,7 @@ impl Board {
                         } else if let Cell::Ghost = cell {
                             // No Conflict
                             self.cells[y][x] = block[block_y][block_x];
-                            if y > self.row_count as usize{
+                            if y > self.row_count as usize {
                                 is_game_over = true;
                             }
                         } else if let Cell::Empty = block[block_y][block_x] {
@@ -99,6 +99,6 @@ impl Board {
 
             block_x += 1;
         }
-        return is_game_over
+        return is_game_over;
     }
 }

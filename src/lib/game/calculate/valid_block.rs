@@ -1,4 +1,4 @@
-use crate::game::{BlockShape, BlockShapeCells, Board, Cell, Point, SpinType};
+use crate::lib::game::{BlockShape, BlockShapeCells, Board, Cell, Point, SpinType};
 
 // 블럭 충돌여부 검증
 pub fn valid_block(board: &Board, block: &BlockShapeCells, point: Point) -> bool {

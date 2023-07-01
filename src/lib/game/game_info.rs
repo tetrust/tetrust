@@ -4,14 +4,14 @@ use instant::Instant;
 use js_sys::Date;
 use js_sys::Math::{floor, random};
 
-use crate::game::{
+use crate::lib::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
     SpinType,
 };
 
-use crate::js_bind::write_text::write_text;
-use crate::options::game_option::GameOption;
-use crate::util::{random, rotate_left, rotate_right, KICK_INDEX_3BY3, KICK_INDEX_I};
+use crate::lib::js_bind::write_text::write_text;
+use crate::lib::options::game_option::GameOption;
+use crate::lib::util::{random, rotate_left, rotate_right, KICK_INDEX_3BY3, KICK_INDEX_I};
 
 use super::{calculate_score, Block, DasChargingStatus};
 

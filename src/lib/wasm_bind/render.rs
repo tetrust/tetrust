@@ -7,15 +7,16 @@ use std::f64;
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 
-use crate::constants::color::{
-    BOARD_DEFAULT_COLOR, BOARD_STROKE_DEFAULT_COLOR, HOLD_DEFAULT_COLOR, HOLD_STROKE_DEFAULT_COLOR,
-    NEXT_DEFAULT_COLOR, NEXT_STROKE_DEFAULT_COLOR, GARBAGE_GAUGE_BACKGROUND_COLOR, GARBAGE_GAUGE_STROKE_COLOR
+use crate::lib::constants::color::{
+    BOARD_DEFAULT_COLOR, BOARD_STROKE_DEFAULT_COLOR, GARBAGE_GAUGE_BACKGROUND_COLOR,
+    GARBAGE_GAUGE_STROKE_COLOR, HOLD_DEFAULT_COLOR, HOLD_STROKE_DEFAULT_COLOR, NEXT_DEFAULT_COLOR,
+    NEXT_STROKE_DEFAULT_COLOR,
 };
-use crate::game::board::Board;
-use crate::game::cell::Cell;
-use crate::game::BlockShape;
-use crate::js_bind::body::body;
-use crate::js_bind::request_animation_frame::request_animation_frame;
+use crate::lib::game::board::Board;
+use crate::lib::game::cell::Cell;
+use crate::lib::game::BlockShape;
+use crate::lib::js_bind::body::body;
+use crate::lib::js_bind::request_animation_frame::request_animation_frame;
 
 use super::draw::draw_block;
 
@@ -287,9 +288,7 @@ pub fn render_hold(
     }
 }
 
-pub fn render_garbage_gauge(
-    garbage_guage_count: u64,
-) {
+pub fn render_garbage_gauge(garbage_guage_count: u64) {
     let document = web_sys::window().unwrap().document().unwrap();
     let canvas = document.get_element_by_id("garbage-gauge-canvas").unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas
@@ -308,9 +307,13 @@ pub fn render_garbage_gauge(
 
     context.set_fill_style(&JsValue::from_str(GARBAGE_GAUGE_BACKGROUND_COLOR)); //게이지배경색
     context.fill_rect(0.0, 0.0, 30.0, 600.0);
-    context.set_fill_style(&JsValue::from_str(GARBAGE_GAUGE_STROKE_COLOR));  //게이지색
-    context.fill_rect(0.0, 600.0-garbage_guage_count as f64 * 30.0 , 30.0, garbage_guage_count as f64*30.0);
-
+    context.set_fill_style(&JsValue::from_str(GARBAGE_GAUGE_STROKE_COLOR)); //게이지색
+    context.fill_rect(
+        0.0,
+        600.0 - garbage_guage_count as f64 * 30.0,
+        30.0,
+        garbage_guage_count as f64 * 30.0,
+    );
 }
 
 #[wasm_bindgen]
