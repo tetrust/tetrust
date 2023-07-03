@@ -1,4 +1,6 @@
+use crate::lib::components::header::Header;
 use crate::router::Route;
+
 use yew::{function_component, html, Html};
 use yew_router::prelude::*;
 
@@ -6,6 +8,8 @@ use yew_router::prelude::*;
 pub fn main_page() -> Html {
     html! {
         <div>
+            <Header/>
+
             <h1>{ "Main Page" }</h1>
 
             <div>
