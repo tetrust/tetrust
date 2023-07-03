@@ -1,3 +1,4 @@
+use crate::lib::components::footer::Footer;
 use crate::lib::components::header::Header;
 use crate::router::Route;
 
@@ -23,6 +24,8 @@ pub fn main_page() -> Html {
             <div>
                 <Link<Route> to={Route::Setting}>{ "Setting" }</Link<Route>>
             </div>
+
+            <Footer/>
         </div>
     }
 }
