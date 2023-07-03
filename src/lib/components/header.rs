@@ -120,10 +120,10 @@ pub fn header() -> Html {
                     </svg>
                     <ul>
                         <li>
-                            <a href="/">{"A"}</a>
+                            <a href="/">{"AAAAAAAAA"}</a>
                         </li>
                         <li>
-                            <a href="/about">{"B"}</a>
+                            <a href="/about">{"BBBBBBBBB"}</a>
                         </li>
                     </ul>
                     <svg viewBox="0 0 2 3" aria-hidden="true">
@@ -136,14 +136,14 @@ pub fn header() -> Html {
                         if is_login {
                             html! {
                                 <a href="/mypage">
-                                    {/* TODO */"" }
+                                    <img src="/resource/png/statistics-64.png" alt="MyStats" />
                                 </a>
                             }
                         }
                         else {
                             html! {
                                 <a href="/login">
-                                    <img src="/resource/svg/login.svg" alt="GitHub" />
+                                    <img src="/resource/svg/login.svg" alt="Login" />
                                 </a>
                             }
                         }
