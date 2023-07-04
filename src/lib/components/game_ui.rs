@@ -6,7 +6,7 @@ use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
 use yew::{function_component, html, use_effect_with_deps, use_state, Callback, Html};
 
-use crate::lib::components::audio::game_audio::GameAudio;
+use crate::lib::components::audio::game_audio::{play_game_audio, GameAudio};
 use crate::lib::components::scorebox::ScoreBox;
 use crate::lib::constants::keycode;
 use crate::lib::game::renderer::GameRenderer;
@@ -34,6 +34,7 @@ pub fn game_ui() -> Html {
             if !game_renderer.playing() {
                 //start_disabled.set(true);
                 game_renderer.start_game();
+                play_game_audio();
             }
         })
     };

@@ -31,12 +31,6 @@ pub fn stop_game_audio() {
 
 #[function_component(GameAudio)]
 pub fn game_audio() -> Html {
-    document()
-        .get_element_by_id("game-audio")
-        .unwrap()
-        .set_attribute("autoplay", "true")
-        .unwrap();
-
     html! {
         <>
             <audio id="game-audio" loop={true}>
