@@ -16,6 +16,19 @@ pub fn play_game_audio() {
     }
 }
 
+pub fn stop_game_audio() {
+    let audio = document()
+        .get_element_by_id("game-audio")
+        .unwrap()
+        .dyn_into::<web_sys::HtmlAudioElement>()
+        .map_err(|_| ())
+        .unwrap();
+
+    if let Err(error) = audio.pause() {
+        log::error!("Failed to stop audio: {:?}", error);
+    }
+}
+
 #[function_component(GameAudio)]
 pub fn game_audio() -> Html {
     document()
