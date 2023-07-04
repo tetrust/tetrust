@@ -9,7 +9,7 @@ edition = "2021"
 yew = { version = "0.20", features = ["csr"] }
 rand = "0.8.4"
 getrandom = { version = "0.2", features = ["js"] }
-js-sys = "0.3.55"
+js-sys = "0.3.64"
 wasm-bindgen = "0.2.83"
 itertools = "0.10.3"
 wasm-logger = "0.2.0"
@@ -24,11 +24,12 @@ yew-router = "0.17.0"
 stylist = { version = "0.12.1", features = ["yew", "macros", "yew_use_style"] }
 
 [dependencies.web-sys]
-version = "0.3.4"
+version = "0.3.64"
 features = [
   'CanvasRenderingContext2d',
   'Document',
   'Element',
   'HtmlCanvasElement',
-  'Window',
+  'HtmlAudioElement',
+  'Window'
 ]
