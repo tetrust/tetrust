@@ -4,6 +4,7 @@ use instant::Instant;
 use js_sys::Date;
 use js_sys::Math::{floor, random};
 
+use crate::lib::components::audio::game_audio::stop_game_audio;
 use crate::lib::game::{
     valid_block, valid_tspin, BagType, BlockShape, Board, Cell, ClearInfo, GameRecord, Point,
     SpinType,
@@ -828,6 +829,7 @@ impl GameInfo {
         self.game_state = GameState::GAMEOVER;
         self.lose = true;
         self.current_block = None;
+        stop_game_audio();
         write_text("message", "Game Over".into());
     }
 
