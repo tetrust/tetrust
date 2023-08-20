@@ -1,0 +1,114 @@
+name: Move to "In Progress" when branch created
+
+on:
+  create:
+    branches:
+      - "feat/#*"
+
+jobs:
+  get_node_id:
+    if: startsWith(github.ref, 'refs/heads/feat/#')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Get Issue node_id
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          ISSUE_NUMBER=${BRANCH_NAME#feat/#}
+          echo "Issue Number: $ISSUE_NUMBER"
+          TOKEN=${{ secrets.GH_TOKEN }}
+          REPO_OWNER=${{ github.repository_owner }}
+          REPO_NAME=${{ github.event.repository.name }}
+
+          QUERY="query { repository(owner: \\\"$REPO_OWNER\\\", name: \\\"$REPO_NAME\\\") { issue(number: $ISSUE_NUMBER) { id } } }"
+          DATA="{\"query\": \"$QUERY\"}"
+          RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -X POST -H "Content-Type: application/json" --data "$DATA" https://api.github.com/graphql)
+          NODE_ID=$(echo $RESPONSE | jq -r '.data.repository.issue.id')
+
+          if [ "$NODE_ID" == "null" ]; then
+            echo "Error: Invalid response from GitHub API"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+
+          echo "Node ID: $NODE_ID"
+          echo "NODE_ID=$NODE_ID" >> $GITHUB_ENV
+
+      - name: Get project data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          ORGANIZATION: tetrust
+          PROJECT_NUMBER: 2
+        run: |
+          gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org){
+                projectV2(number: $number) {
+                  id
+                  fields(first:20) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f org=$ORGANIZATION -F number=$PROJECT_NUMBER > project_data.json
+
+          echo 'PROJECT_ID='$(jq '.data.organization.projectV2.id' project_data.json) >> $GITHUB_ENV
+          echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
+          echo 'ISSUE_CREATE_ID='$(jq '.data.organization.projectV2.fields.nodes[] | select(.name== "Status") | .options[] | select(.name=="In Progress") |.id' project_data.json) >> $GITHUB_ENV
+
+      - name: Get Issue node_id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          ISSUE_ID: ${{ env.NODE_ID }}
+        run: |
+          item_id="$( gh api graphql -f query='
+            mutation($project:ID!, $pr:ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $pr}) {
+                item {
+                  id
+                }
+              }
+            }' -f project=$PROJECT_ID -f pr=$ISSUE_ID --jq '.data.addProjectV2ItemById.item.id')"
+
+            echo 'ITEM_ID='$item_id >> $GITHUB_ENV
+
+      - name: Set fields
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          gh api graphql -f query='
+            mutation (
+              $project: ID!
+              $item: ID!
+              $status_field: ID!
+              $status_value: String!
+            ) {
+              set_status: updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $status_field
+                value: {
+                  singleSelectOptionId: $status_value
+                  }
+              }) {
+                projectV2Item {
+                  id
+                  }
+              }
+            }' -f project=${{ env.PROJECT_ID }} -f item=${{ env.ITEM_ID }} -f status_field=${{ env.STATUS_FIELD_ID }} -f status_value=${{ env.ISSUE_CREATE_ID }} --silent
