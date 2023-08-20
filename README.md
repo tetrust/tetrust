@@ -20,6 +20,6 @@ trunk serve --open
 배포 빌드
 
 ```
+
 trunk build --release
 ```
-
