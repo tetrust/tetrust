@@ -1,0 +1,27 @@
+on:
+  pull_request:
+    branches: ["main", "dev", "develop"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: jetli/trunk-action@v0.1.0
+        with:
+          version: "latest"
+
+      - name: before
+        run: |
+          git commit --amend -m "success" |
+          git config --global user.email "you@example.com" |
+          git config --global user.name "Your Name"
+
+      - name: rustup
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: check
+        run: cargo check
