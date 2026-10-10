@@ -1,3 +1,6 @@
+[workspace]
+members = ["crates/*"]
+
 [package]
 name = "tetrust"
 version = "0.2.0"
@@ -6,30 +9,30 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tetrust-engine = { path = "crates/tetrust-engine" }
 yew = { version = "0.20", features = ["csr"] }
-rand = "0.8.4"
-getrandom = { version = "0.2", features = ["js"] }
+yew-router = "0.17.0"
 js-sys = "0.3.64"
 wasm-bindgen = "0.2.83"
-itertools = "0.10.3"
 wasm-logger = "0.2.0"
 log = "0.4.14"
-gloo-timers = { version = "0.2.2", features = ["futures"]} 
-futures-util = "0.3.19"
-wasm-bindgen-futures = "0.4.28"
-instant = { version = "0.1", features = [ "wasm-bindgen", "inaccurate" ] }
-serde = "1.0.147"
-serde_json = "1.0.87"
-yew-router = "0.17.0"
 stylist = { version = "0.12.1", features = ["yew", "macros", "yew_use_style"] }
 
 [dependencies.web-sys]
-version = "0.3.64"
+version = "0.3.70"
 features = [
   'CanvasRenderingContext2d',
   'Document',
   'Element',
-  'HtmlCanvasElement',
+  'Event',
+  'EventTarget',
   'HtmlAudioElement',
-  'Window'
+  'HtmlCanvasElement',
+  'HtmlElement',
+  'HtmlInputElement',
+  'KeyboardEvent',
+  'Node',
+  'Performance',
+  'Storage',
+  'Window',
 ]

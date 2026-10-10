@@ -7,13 +7,12 @@ use crate::lib::js_bind::localstorage::{get_local_value, set_local_value};
 
 #[function_component(SdfInput)]
 pub fn sdf() -> Html {
-    if let None = get_local_value("sdf") {
+    if get_local_value("sdf").is_none() {
         set_local_value("sdf", 5.to_string());
     }
 
     let sdf_value = get_local_value("sdf")
-        .map(|v| v.parse::<u32>().ok())
-        .flatten()
+        .and_then(|v| v.parse::<u32>().ok())
         .unwrap_or(5);
 
     let sdf_state = use_state(|| sdf_value);
