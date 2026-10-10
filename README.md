@@ -47,3 +47,14 @@ trunk build --release
 ```
 cargo test --workspace
 ```
+
+E2E 테스트 (Playwright)
+
+```
+cd e2e
+npm install
+npx playwright install chromium
+npm test
+```
+
+`npm test`가 `trunk serve`(포트 8787)를 띄우고 Chromium으로 테스트합니다. 브라우저를 보면서 돌리려면 `npm run test:headed`, 디버깅 UI는 `npm run test:ui`, 실패 리포트는 `npm run report`.
