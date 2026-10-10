@@ -6,7 +6,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  check:
+  # main 브랜치 보호 규칙의 필수 체크 이름
+  compile_check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
