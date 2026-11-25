@@ -6,13 +6,12 @@ use crate::lib::js_bind::localstorage::{get_local_value, set_local_value};
 
 #[function_component(DasInput)]
 pub fn das() -> Html {
-    if let None = get_local_value("das") {
+    if get_local_value("das").is_none() {
         set_local_value("das", "300".to_string());
     }
 
     let das_value = get_local_value("das")
-        .map(|v| v.parse::<u32>().ok())
-        .flatten()
+        .and_then(|v| v.parse::<u32>().ok())
         .unwrap_or(300);
 
     let das_state = use_state(|| das_value);

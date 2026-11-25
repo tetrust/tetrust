@@ -6,13 +6,12 @@ use crate::lib::js_bind::localstorage::{get_local_value, set_local_value};
 
 #[function_component(ArrInput)]
 pub fn arr() -> Html {
-    if let None = get_local_value("arr") {
+    if get_local_value("arr").is_none() {
         set_local_value("arr", 0.to_string());
     }
 
     let arr_value = get_local_value("arr")
-        .map(|v| v.parse::<u32>().ok())
-        .flatten()
+        .and_then(|v| v.parse::<u32>().ok())
         .unwrap_or(0);
 
     let arr_state = use_state(|| arr_value);

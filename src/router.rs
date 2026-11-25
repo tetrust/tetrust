@@ -1,7 +1,7 @@
 use yew::{function_component, html, Html};
 use yew_router::prelude::*;
 
-use crate::pages::{multi::MultiPlay, setting::SettingPage, single::SinglePlay, main::MainPage};
+use crate::pages::{main::MainPage, multi::MultiPlay, setting::SettingPage, single::SinglePlay};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {

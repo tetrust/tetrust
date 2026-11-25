@@ -1,0 +1,8 @@
+[package]
+name = "tetrust-engine"
+version = "0.1.0"
+edition = "2021"
+description = "Deterministic, platform-independent Tetris engine for tetrust"
+license = "MIT"
+
+[dependencies]
